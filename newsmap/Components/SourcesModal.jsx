@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from 'react';
+import { translate as t } from '../i18n.js';
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {import('./Edition').Article} props.article
  * @param {boolean} props.newTab
  * @param {() => void} props.onClose
  */
 export function SourcesModal({
+  locale = "en",
   article,
   newTab,
   onClose,
@@ -23,7 +26,7 @@ export function SourcesModal({
   return (
     <div className="App-shade" onClick={onClose}>
       <div className="App-modal App-Options" onClick={e => e.stopPropagation()}>
-        <h1>Sources</h1>
+        <h1>{t(locale, "sourcesTitle")}</h1>
         <div className="App-modalbody" ref={bodyRef}>
           {
             article.sources.map(source => (
@@ -44,7 +47,7 @@ export function SourcesModal({
           }
         </div>
         <p style={{ textAlign: "right", marginBottom: 0 }}>
-          <button onClick={onClose}>Dismiss</button>
+          <button onClick={onClose}>{t(locale, "dismiss")}</button>
         </p>
       </div>
     </div>

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { ucfirst } from '../util.js';
 import * as palettes from '../colours.js';
 import editions from '../data/editions.json';
+import { translate as t } from '../i18n.js';
 
 /**
  *
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {string[]} props.selectedEditions
  * @param {"tree"|"tree_mixed"|"grid"} props.mode
  * @param {"time"|"source_count"|"sources"|"position"} props.weightingMode
@@ -22,6 +23,7 @@ import editions from '../data/editions.json';
  * @returns
  */
 export function OptionsModal({
+  locale = "en",
   selectedEditions,
   mode,
   weightingMode,
@@ -50,11 +52,18 @@ export function OptionsModal({
   return (
     <div className="App-shade" onClick={onClose}>
       <div className="App-modal App-Options" onClick={e => e.stopPropagation()}>
-        <h1>Options</h1>
+        <h1>{t(locale, "settings")}</h1>
         <div className="App-modalbody">
           <div className="App-formgroup">
+            <label htmlFor="sel-language">{t(locale, "language")}</label>
+            <select id="sel-language" value={locale} onChange={e => setSavedState({ locale: e.target.value })}>
+              <option value="en">English</option>
+              <option value="tr">Türkçe</option>
+            </select>
+          </div>
+          <div className="App-formgroup">
             <label htmlFor="sel-editions">
-              Edition
+              {t(locale, "edition")}
             </label>
             <select
               id="sel-editions"
@@ -67,80 +76,80 @@ export function OptionsModal({
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-top-header">
-              Controls on Top
+              {t(locale, "controlsTop")}
             </label>
             <input id="chk-top-header" type="checkbox" checked={headerTop} onChange={e => setSavedState({ headerTop: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label htmlFor="sel-layout-mode">
-              Layout Mode
+              {t(locale, "layoutMode")}
             </label>
             <select id="sel-layout-mode" value={mode} onChange={e => setSavedState({ mode: e.target.value })}>
-              <option value="tree">Tree Map</option>
-              <option value="tree_mixed">Tree Map (combined)</option>
-              <option value="grid">Grid</option>
+              <option value="tree">{t(locale, "treeMap")}</option>
+              <option value="tree_mixed">{t(locale, "treeMapCombined")}</option>
+              <option value="grid">{t(locale, "grid")}</option>
             </select>
           </div>
           <div className="App-formgroup">
             <label htmlFor="sel-weighting-mode">
-              Weighting Mode
+              {t(locale, "weightingMode")}
             </label>
             <select id="sel-weighting-mode" value={weightingMode} onChange={e => setSavedState({ weightingMode: e.target.value })}>
-              <option value="time">Time based</option>
+              <option value="time">{t(locale, "timeBased")}</option>
               {/* <option value="sourceCount">By source count alone</option> */}
-              <option value="sources">By source count and Google News position</option>
-              <option value="position">By Google News position</option>
+              <option value="sources">{t(locale, "sourceAndPosition")}</option>
+              <option value="position">{t(locale, "position")}</option>
             </select>
           </div>
           <div className="App-formgroup">
             <label>
-              Palette
+              {t(locale, "palette")}
             </label>
-            <PaletteSelect selectedPalette={selectedPalette} setPalette={(name) => setSavedState({ palette: name })} />
+            <PaletteSelect selectedPalette={selectedPalette} setPalette={(name) => setSavedState({ palette: name })} locale={locale} />
           </div>
           <div className="App-formgroup">
             <label>
-              Square Style
+              {t(locale, "squareStyle")}
             </label>
             <div>
               <label htmlFor="chk-style-flat" style={{ marginBottom: 8 }}>
                 <input id="chk-style-flat" name="chk-style" type="radio" checked={!showGradient} onChange={e => setSavedState({ showGradient: !e.target.checked })} />
-                Flat
+                {t(locale, "flat")}
               </label>
               <label htmlFor="chk-style-gradient" style={{ marginBottom: 8 }}>
                 <input id="chk-style-gradient" name="chk-style" type="radio" checked={showGradient} onChange={e => setSavedState({ showGradient: e.target.checked })} />
-                Gradient
+                {t(locale, "gradient")}
               </label>
             </div>
           </div>
           <div className="App-formgroup">
             <label htmlFor="num-per-cat">
-              Items per category
+              {t(locale, "itemsPerCategory")}
             </label>
             <div>
               <input id="num-per-cat" type="number" min={0} value={itemsPerCategory} onChange={e => setSavedState({ itemsPerCategory: e.target.value })} />
-              <p style={{ fontStyle: "italic", fontSize: "0.8em" }}>(Max is about 70 for most editions)</p>
+              <p style={{ fontStyle: "italic", fontSize: "0.8em" }}>{t(locale, "maxItems")}</p>
             </div>
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-new-tab">
-              Open links in new tab
+              {t(locale, "openNewTab")}
             </label>
             <input id="chk-new-tab" type="checkbox" checked={newTab} onChange={e => setSavedState({ newTab: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-sources-modal">
-              Show sources before following link
+              {t(locale, "showSourcesBeforeLink")}
             </label>
             <input id="chk-sources-modal" type="checkbox" checked={enableSourcesModal} onChange={e => setSavedState({ enableSourcesModal: e.target.checked })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "end" }}>
           {
-            donationLink && <DonationLink link={donationLink} />
+            donationLink && <DonationLink link={donationLink} locale={locale} />
           }
           <p style={{ textAlign: "right", marginBottom: 0 }}>
-            <button onClick={onClose}>Dismiss</button>
+            <button onClick={onClose}>{t(locale, "dismiss")}</button>
           </p>
         </div>
       </div>
@@ -148,7 +157,7 @@ export function OptionsModal({
   );
 }
 
-function PaletteSelect({ selectedPalette, setPalette }) {
+function PaletteSelect({ selectedPalette, setPalette, locale }) {
   return Object.entries(palettes).map(([name, palette]) => {
     if (name === "default")
       return null;
@@ -165,27 +174,26 @@ function PaletteSelect({ selectedPalette, setPalette }) {
             key={cat}
             className="App-swatch"
             style={{ backgroundColor: colour }}
-            title={ucfirst(cat)} />
+            title={t(locale, `categories.${cat}`)} />
         ))}
       </div>
     );
   });
 }
 
-function DonationLink({ link }) {
+function DonationLink({ link, locale }) {
   const [showDonationLink, setShowDonationLink] = useState(false);
 
   return (
     <div style={{ flex: 1 }}>
       {showDonationLink ?
         <p style={{ fontSize: "0.8em" }}>
-          If you find NewsMap.JS useful, donations are very much appreciated to
-          help pay for associated hosting costs.{' '}
+          {t(locale, "donationText")}{' '}
           <a href={link} target="_blank" rel="noopener">{link}</a>.
         </p> :
         <p>
           <button onClick={() => setShowDonationLink(true)} className="btn-link">
-            I want to help with hosting costs.
+            {t(locale, "helpHosting")}
           </button>
         </p>
       }

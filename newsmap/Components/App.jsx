@@ -15,6 +15,7 @@ import { SearchOptionsModal } from './SearchOptionsModal.jsx';
 import { SourcesModal } from './SourcesModal.jsx';
 import { FeedsModal } from './FeedsModal.jsx';
 import { getActiveCategories } from '../customSources.js';
+import { translate as t } from '../i18n.js';
 
 const defaultRefreshTime = 10 * 60 * 1000;
 
@@ -53,6 +54,7 @@ const defaultRefreshTime = 10 * 60 * 1000;
  * @prop {import('./Edition.jsx').Article?} selectedArticle
  * @prop {{ [id: string]: import('../customSources.js').CustomSource }} customSources
  * @prop {boolean} showFeeds
+ * @prop {"en"|"tr"} locale
  */
 
 /**
@@ -86,6 +88,7 @@ class App extends Component {
       selectedArticle: null,
       customSources: {},
       showFeeds: false,
+      locale: "en",
     };
 
     /** @type {AppState} */
@@ -259,6 +262,8 @@ class App extends Component {
   }
 
   componentDidUpdate() {
+    document.documentElement.lang = this.state.locale || "en";
+
     if (this.state.wakeLock) {
       if (!this.wakeLockRef) {
         this.getWakeLock();
@@ -345,7 +350,7 @@ class App extends Component {
   }
 
   renderHeader(colours) {
-    const { selectedCategories, wakeLock, searchValue, customSources } = this.state;
+    const { selectedCategories, wakeLock, searchValue, customSources, locale } = this.state;
     const customCount = Object.keys(customSources).length;
 
     return (
@@ -354,22 +359,30 @@ class App extends Component {
           <div className="App-header-config-topline">
             <h1 className="App-title" style={{ flex: 1 }}><a href="https://newsmap.ijmacd.com">NewsMap.JS</a></h1>
             <div className="App-header-controls">
-              <button style={{ margin: 4 }} onClick={() => this.setState({ showOptions: true })}>Options</button>
-              <button style={{ margin: 4 }} onClick={() => this.ref && requestFullscreen(this.ref)}>Fullscreen</button>
-              <button style={{ margin: 4, outline: searchValue.enabled ? "2px solid red" : void 0 }} onClick={() => this.setState({ showSearchOptions: true })}>{searchValue.enabled ? "Search Active" : "Search"}</button>
+              <button style={{ margin: 4 }} onClick={() => this.setState({ showOptions: true })}>{t(locale, "options")}</button>
+              <button style={{ margin: 4 }} onClick={() => this.ref && requestFullscreen(this.ref)}>{t(locale, "fullscreen")}</button>
+              <button style={{ margin: 4, outline: searchValue.enabled ? "2px solid red" : void 0 }} onClick={() => this.setState({ showSearchOptions: true })}>{searchValue.enabled ? t(locale, "searchActive") : t(locale, "search")}</button>
               <button style={{ margin: 4 }} onClick={() => this.setState({ showFeeds: true })}>
-                {customCount > 0 ? `Sources (${customCount})` : "Sources"}
+                {customCount > 0 ? `${t(locale, "sources")} (${customCount})` : t(locale, "sources")}
+              </button>
+              <button
+                style={{ margin: 4 }}
+                lang={locale === "en" ? "tr" : "en"}
+                aria-label={`${t(locale, "language")}: ${locale === "en" ? "Türkçe" : "English"}`}
+                onClick={() => this.setSavedState({ locale: locale === "en" ? "tr" : "en" })}
+              >
+                {locale === "en" ? "TR" : "EN"}
               </button>
             </div>
             {
               "wakeLock" in navigator &&
-              <label style={{ margin: 4 }}><input type="checkbox" checked={wakeLock} onChange={(e) => this.setState({ wakeLock: e.target.checked })} /> Keep Screen On</label>
+              <label style={{ margin: 4 }}><input type="checkbox" checked={wakeLock} onChange={(e) => this.setState({ wakeLock: e.target.checked })} /> {t(locale, "keepScreenOn")}</label>
             }
           </div>
           <p className="App-intro">
-            Data from <a href="https://news.google.com">Google News</a> and your own sources.
-            Inspired by <a href="http://newsmap.jp">newsmap.jp</a>.
-            Fork me on <a href="https://github.com/ijmacd/newsmap-js">GitHub</a>.
+            {t(locale, "intro")} <a href="https://news.google.com">Google News</a> {t(locale, "andYourSources")}{" "}
+            {t(locale, "inspiredBy")} <a href="http://newsmap.jp">newsmap.jp</a>.{" "}
+            {t(locale, "forkMe")} <a href="https://github.com/ijmacd/newsmap-js">GitHub</a>.
           </p>
         </div>
         <div className="App-category-chooser">
@@ -392,7 +405,7 @@ class App extends Component {
                     checked={active}
                     onChange={this.onCategoryChange}
                     value={cat} />
-                  {custom ? custom.name : ucfirst(cat)}
+                  {custom ? custom.name : t(locale, `categories.${cat}`)}
                 </label>
               )
             })
@@ -467,6 +480,7 @@ class App extends Component {
             }
             {enableSourcesModal && selectedArticle &&
               <SourcesModal
+                locale={this.state.locale}
                 article={selectedArticle}
                 newTab={newTab}
                 onClose={() => this.setState({ selectedArticle: null })}
@@ -477,6 +491,7 @@ class App extends Component {
         {!headerTop && this.renderHeader(colours)}
         {showOptions &&
           <OptionsModal
+            locale={this.state.locale}
             selectedEditions={this.state.selectedEditions}
             mode={this.state.mode}
             weightingMode={weightingMode}
@@ -494,6 +509,7 @@ class App extends Component {
         }
         {showSearchOptions &&
           <SearchOptionsModal
+            locale={this.state.locale}
             searchValue={this.state.searchValue}
             setSearchValue={searchValue => this.setSavedState({ searchValue })}
             onClose={() => this.setState({ showSearchOptions: false })}
@@ -501,6 +517,7 @@ class App extends Component {
         }
         {showFeeds &&
           <FeedsModal
+            locale={this.state.locale}
             customSources={customSources}
             selectedCategories={selectedCategories}
             edition={selectedEditions[0]}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { defaultSearchContextValue } from '../SearchContext';
+import { translate as t } from '../i18n.js';
 
 /**
  * @typedef {import('../SearchContext').SearchContextValue} SearchContextValue
@@ -7,11 +8,13 @@ import { defaultSearchContextValue } from '../SearchContext';
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {SearchContextValue} props.searchValue
  * @param {(value: SearchContextValue) => void} props.setSearchValue
  * @param {() => void} props.onClose
  */
 export function SearchOptionsModal({
+  locale = "en",
   searchValue,
   setSearchValue,
   onClose,
@@ -38,62 +41,62 @@ export function SearchOptionsModal({
   return (
     <div className="App-shade" onClick={onClose}>
       <div className="App-modal App-Options" onClick={e => e.stopPropagation()}>
-        <h1>Search</h1>
+        <h1>{t(locale, "searchTitle")}</h1>
         <div className="App-modalbody">
           <div className="App-formgroup">
             <label htmlFor="chk-enabled">
-              Enabled
+              {t(locale, "enabled")}
             </label>
             <input id="chk-enabled" type="checkbox" checked={searchValue.enabled} onChange={e => setSearchOption({ enabled: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label>
-              Mode
+              {t(locale, "mode")}
             </label>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <label style={{ flexBasis: 28 }}>
                 <input name="radio-search-mode" type="radio" value="highlight" checked={searchValue.mode === "highlight"} onChange={e => setSearchOption({ mode: e.target.checked ? "highlight" : "filter" })} />
-                Highlight
+                {t(locale, "highlight")}
               </label>
               <label style={{ flexBasis: 28 }}>
                 <input name="radio-search-mode" type="radio" value="filter" checked={searchValue.mode === "filter"} onChange={e => setSearchOption({ mode: e.target.checked ? "filter" : "highlight" })} />
-                Filter
+                {t(locale, "filter")}
               </label>
             </div>
           </div>
           <div className="App-formgroup">
             <label htmlFor="text-search-input">
-              Term
+              {t(locale, "term")}
             </label>
             <div>
               <input id="text-search-input" value={searchValue.text} onChange={e => setSearchOption({ text: e.target.value })} />
-              {isInvalidRegex && <p style={{ color: "#FF4444", fontSize: "0.8em", fontStyle: "italic", margin: "8px 0" }}>Invalid Regex</p>}
+              {isInvalidRegex && <p style={{ color: "#FF4444", fontSize: "0.8em", fontStyle: "italic", margin: "8px 0" }}>{t(locale, "invalidRegex")}</p>}
             </div>
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-case-sensitive">
-              Case-Sensitive
+              {t(locale, "caseSensitive")}
             </label>
             <input id="chk-case-sensitive" type="checkbox" checked={searchValue.caseSensitive} onChange={e => setSearchOption({ caseSensitive: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-regex">
-              Regex
+              {t(locale, "regex")}
             </label>
             <input id="chk-regex" type="checkbox" checked={searchValue.regex} onChange={e => setSearchOption({ regex: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label>
-              Search in
+              {t(locale, "searchIn")}
             </label>
             <div>
               <label htmlFor="chk-headlines" style={{ display: "block", marginBottom: 8 }}>
                 <input id="chk-headlines" type="checkbox" checked={searchValue.includeHeadline} onChange={e => setSearchOption({ includeHeadline: e.target.checked })} />
-                Headline
+                {t(locale, "headline")}
               </label>
               <label htmlFor="chk-sources" style={{ display: "block", marginBottom: 8 }}>
                 <input id="chk-sources" type="checkbox" checked={searchValue.includeSource} onChange={e => setSearchOption({ includeSource: e.target.checked })} />
-                Source Name
+                {t(locale, "sourceName")}
               </label>
             </div>
           </div>
@@ -101,11 +104,11 @@ export function SearchOptionsModal({
             <label>
 
             </label>
-            <button onClick={() => setSearchValue(defaultSearchContextValue)}>Clear Search</button>
+            <button onClick={() => setSearchValue(defaultSearchContextValue)}>{t(locale, "clearSearch")}</button>
           </div>
         </div>
         <p style={{ textAlign: "right", marginBottom: 0 }}>
-          <button onClick={onClose}>Dismiss</button>
+          <button onClick={onClose}>{t(locale, "dismiss")}</button>
         </p>
       </div>
     </div>

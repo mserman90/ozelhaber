@@ -8,6 +8,7 @@ import {
   whenOptions,
 } from '../customSources.js';
 import './FeedsModal.css';
+import { translate as t } from '../i18n.js';
 
 /**
  * @typedef {import('../customSources.js').CustomSource} CustomSource
@@ -15,6 +16,7 @@ import './FeedsModal.css';
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {{ [id: string]: CustomSource }} props.customSources
  * @param {string[]} props.selectedCategories
  * @param {string} props.edition
@@ -25,6 +27,7 @@ import './FeedsModal.css';
  * @param {() => void} props.onClose
  */
 export function FeedsModal({
+  locale = "en",
   customSources,
   selectedCategories,
   edition,
@@ -47,8 +50,8 @@ export function FeedsModal({
         aria-labelledby="feeds-modal-title"
         onClick={e => e.stopPropagation()}
       >
-        <h1 id="feeds-modal-title">Custom Sources</h1>
-        <div className="Feeds-tabs" role="tablist" aria-label="Source type">
+        <h1 id="feeds-modal-title">{t(locale, "customSources")}</h1>
+        <div className="Feeds-tabs" role="tablist" aria-label={t(locale, "sourceType")}>
           <button
             role="tab"
             id="tab-rss"
@@ -57,7 +60,7 @@ export function FeedsModal({
             className={tab === "rss" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
             onClick={() => setTab("rss")}
           >
-            RSS / Atom Feed
+            {t(locale, "rssTab")}
           </button>
           <button
             role="tab"
@@ -67,22 +70,23 @@ export function FeedsModal({
             className={tab === "search" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
             onClick={() => setTab("search")}
           >
-            Google News Search
+            {t(locale, "googleSearch")}
           </button>
         </div>
         <div className="App-modalbody">
           {tab === "rss" ?
-            <RssForm key="rss" defaultColour={nextColour} onAdd={onAdd} /> :
-            <SearchForm key="search" defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />
+            <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} /> :
+            <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />
           }
 
-          <h2 className="Feeds-heading">Your sources ({sources.length})</h2>
+          <h2 className="Feeds-heading">{t(locale, "yourSources")} ({sources.length})</h2>
           {sources.length === 0 ?
-            <p className="Feeds-hint">No custom sources yet. Added sources appear as their own coloured blocks on the map and as toggles next to the built-in categories.</p> :
+            <p className="Feeds-hint">{t(locale, "noCustomSources")}</p> :
             <ul className="Feeds-list">
               {sources.map(source => (
                 <SourceRow
                   key={source.id}
+                  locale={locale}
                   source={source}
                   visible={selectedCategories.includes(source.id)}
                   edition={edition}
@@ -94,7 +98,7 @@ export function FeedsModal({
           }
         </div>
         <p style={{ textAlign: "right", marginBottom: 0 }}>
-          <button onClick={onClose}>Dismiss</button>
+          <button onClick={onClose}>{t(locale, "dismiss")}</button>
         </p>
       </div>
     </div>
@@ -103,13 +107,14 @@ export function FeedsModal({
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {CustomSource} props.source
  * @param {boolean} props.visible
  * @param {string} props.edition
  * @param {(id: string, visible: boolean) => void} props.onToggle
  * @param {(id: string) => void} props.onRemove
  */
-function SourceRow({ source, visible, edition, onToggle, onRemove }) {
+function SourceRow({ locale, source, visible, edition, onToggle, onRemove }) {
   const detail = source.type === "rss" ? source.url : source.query;
   const href = source.type === "rss" ? source.url : getGoogleNewsSearchUrl(source.query || "", edition);
   const checkboxId = `chk-source-${source.id}`;
@@ -131,14 +136,14 @@ function SourceRow({ source, visible, edition, onToggle, onRemove }) {
           checked={visible}
           onChange={e => onToggle(source.id, e.target.checked)}
         />
-        Show
+        {t(locale, "show")}
       </label>
       <button
         className="Feeds-remove"
         onClick={() => onRemove(source.id)}
-        aria-label={`Remove ${source.name}`}
+        aria-label={`${t(locale, "remove")} ${source.name}`}
       >
-        Remove
+        {t(locale, "remove")}
       </button>
     </li>
   );
@@ -147,24 +152,25 @@ function SourceRow({ source, visible, edition, onToggle, onRemove }) {
 /**
  * @param {{ state: "idle"|"loading"|"error"|"success", message?: string }} props
  */
-function Status({ state, message }) {
+function Status({ locale, state, message }) {
   if (state === "idle") return null;
   return (
     <p
       className={`Feeds-status Feeds-status--${state}`}
       role={state === "error" ? "alert" : "status"}
     >
-      {state === "loading" ? "Checking source…" : message}
+      {state === "loading" ? t(locale, "checkingSource") : message}
     </p>
   );
 }
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {string} props.defaultColour
  * @param {(source: CustomSource) => void} props.onAdd
  */
-function RssForm({ defaultColour, onAdd }) {
+function RssForm({ locale, defaultColour, onAdd }) {
   const uid = useId();
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
@@ -184,7 +190,7 @@ function RssForm({ defaultColour, onAdd }) {
     try {
       new URL(normalised);
     } catch (err) {
-      setStatus({ state: "error", message: "Please enter a valid URL, e.g. https://feeds.bbci.co.uk/news/rss.xml" });
+      setStatus({ state: "error", message: t(locale, "invalidUrl") });
       return;
     }
 
@@ -192,16 +198,16 @@ function RssForm({ defaultColour, onAdd }) {
     try {
       const feed = await getCustomFeed({ url: normalised });
       if (feed.articles.length === 0) {
-        setStatus({ state: "error", message: "The feed loaded but contains no articles." });
+        setStatus({ state: "error", message: t(locale, "feedEmpty") });
         return;
       }
       const finalName = name.trim() || feed.title || new URL(normalised).hostname;
       onAdd({ id: createSourceId("rss"), type: "rss", name: finalName, url: normalised, color: colour });
-      setStatus({ state: "success", message: `Added "${finalName}" with ${feed.articles.length} articles.` });
+      setStatus({ state: "success", message: locale === "tr" ? `“${finalName}” ${feed.articles.length} haberle eklendi.` : `Added "${finalName}" with ${feed.articles.length} articles.` });
       setUrl("");
       setName("");
     } catch (err) {
-      setStatus({ state: "error", message: err instanceof Error ? err.message : "Could not load the feed." });
+      setStatus({ state: "error", message: err instanceof Error ? (t(locale, err.message === "Feed is too large (max 3 MB)" ? "feedTooLarge" : err.message === "URL did not return an RSS or Atom feed" ? "invalidFeed" : "feedLoadError")) : t(locale, "feedLoadError") });
     }
   }
 
@@ -213,9 +219,9 @@ function RssForm({ defaultColour, onAdd }) {
       onSubmit={handleSubmit}
       className="Feeds-form"
     >
-      <p className="Feeds-hint">Add any public RSS 2.0, RSS 1.0 or Atom feed. It is fetched through the server, so CORS is not a problem.</p>
+      <p className="Feeds-hint">{t(locale, "rssHint")}</p>
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-url`}>Feed URL</label>
+        <label htmlFor={`${uid}-url`}>{t(locale, "feedUrl")}</label>
         <input
           id={`${uid}-url`}
           className="Feeds-input"
@@ -228,37 +234,38 @@ function RssForm({ defaultColour, onAdd }) {
         />
       </div>
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-name`}>Name</label>
+        <label htmlFor={`${uid}-name`}>{t(locale, "name")}</label>
         <input
           id={`${uid}-name`}
           className="Feeds-input"
-          placeholder="Optional - defaults to feed title"
+          placeholder={t(locale, "optionalFeedName")}
           maxLength={40}
           value={name}
           onChange={e => setName(e.target.value)}
         />
       </div>
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-colour`}>Colour</label>
+        <label htmlFor={`${uid}-colour`}>{t(locale, "colour")}</label>
         <input id={`${uid}-colour`} type="color" value={colour} onChange={e => setColour(e.target.value)} />
       </div>
       <div className="App-formgroup">
         <span className="Feeds-spacer" />
-        <button type="submit" disabled={status.state === "loading"}>Add feed</button>
+        <button type="submit" disabled={status.state === "loading"}>{t(locale, "addFeed")}</button>
       </div>
-      <Status {...status} />
+      <Status {...status} locale={locale} />
     </form>
   );
 }
 
 /**
  * @param {object} props
+ * @param {"en"|"tr"} props.locale
  * @param {string} props.defaultColour
  * @param {string} props.edition
  * @param {string} props.editionName
  * @param {(source: CustomSource) => void} props.onAdd
  */
-function SearchForm({ defaultColour, edition, editionName, onAdd }) {
+function SearchForm({ locale, defaultColour, edition, editionName, onAdd }) {
   const uid = useId();
   const [fields, setFields] = useState(emptyDorkFields);
   const [manualQuery, setManualQuery] = useState(/** @type {string?} */(null));
@@ -282,7 +289,7 @@ function SearchForm({ defaultColour, edition, editionName, onAdd }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!query) {
-      setStatus({ state: "error", message: "Enter at least one keyword or operator." });
+      setStatus({ state: "error", message: t(locale, "enterSearch") });
       return;
     }
 
@@ -290,17 +297,17 @@ function SearchForm({ defaultColour, edition, editionName, onAdd }) {
     try {
       const result = await searchNews({ query, edition });
       if (result.articles.length === 0) {
-        setStatus({ state: "error", message: "No articles match this query. Try loosening the filters." });
+        setStatus({ state: "error", message: t(locale, "noSearchResults") });
         return;
       }
       const finalName = name.trim() || query.slice(0, 40);
       onAdd({ id: createSourceId("search"), type: "search", name: finalName, query, color: colour });
-      setStatus({ state: "success", message: `Added "${finalName}" with ${result.articles.length} articles.` });
+      setStatus({ state: "success", message: locale === "tr" ? `“${finalName}” ${result.articles.length} haberle eklendi.` : `Added "${finalName}" with ${result.articles.length} articles.` });
       setFields(emptyDorkFields);
       setManualQuery(null);
       setName("");
     } catch (err) {
-      setStatus({ state: "error", message: err instanceof Error ? err.message : "Search failed." });
+      setStatus({ state: "error", message: err instanceof Error ? err.message : t(locale, "searchError") });
     }
   }
 
@@ -339,39 +346,39 @@ function SearchForm({ defaultColour, edition, editionName, onAdd }) {
       className="Feeds-form"
     >
       <p className="Feeds-hint">
-        Build a Google News search with operators (dorks). Results use the language and region of <strong>{editionName}</strong>.
+        {t(locale, "addGoogleSearchDescription")} <strong>{editionName}</strong>.
       </p>
 
       <fieldset className="Feeds-fieldset" disabled={manualQuery !== null}>
-        <legend>Query builder</legend>
-        {field("allWords", "All words", "climate summit")}
-        {field("exactPhrase", "Exact phrase", "artificial intelligence")}
-        {field("anyWords", "Any of", "nvidia, amd, intel", "Combined with OR")}
-        {field("excludeWords", "Exclude", "rumour, opinion", "Prefixed with -")}
-        {field("sites", "Only sites", "reuters.com, bbc.co.uk", "site: (comma separated)")}
-        {field("excludeSites", "Exclude sites", "example.com", "-site:")}
-        {field("inTitle", "In headline", "election", "intitle:")}
-        {field("inUrl", "In URL", "politics", "inurl:")}
+        <legend>{t(locale, "queryBuilder")}</legend>
+        {field("allWords", t(locale, "allWords"), "climate summit")}
+        {field("exactPhrase", t(locale, "exactPhrase"), "artificial intelligence")}
+        {field("anyWords", t(locale, "anyWords"), "nvidia, amd, intel", t(locale, "combinedWithOr"))}
+        {field("excludeWords", t(locale, "exclude"), "rumour, opinion", t(locale, "prefixedWith"))}
+        {field("sites", t(locale, "onlySites"), "reuters.com, bbc.co.uk", t(locale, "siteOperator"))}
+        {field("excludeSites", t(locale, "excludeSites"), "example.com", "-site:")}
+        {field("inTitle", t(locale, "inHeadline"), "election", t(locale, "inTitleOperator"))}
+        {field("inUrl", t(locale, "inUrl"), "politics", t(locale, "inUrlOperator"))}
         <div className="App-formgroup">
-          <label htmlFor={`${uid}-when`}>Time range</label>
+          <label htmlFor={`${uid}-when`}>{t(locale, "timeRange")}</label>
           <select id={`${uid}-when`} value={fields.when} onChange={e => update({ when: e.target.value })}>
-            {whenOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {whenOptions.map(o => <option key={o.value} value={o.value}>{t(locale, ({ "": "anyTime", "1h": "pastHour", "12h": "past12Hours", "1d": "past24Hours", "7d": "pastWeek", "30d": "pastMonth", "1y": "pastYear" })[o.value])}</option>)}
           </select>
         </div>
         {!fields.when &&
           <div className="App-formgroup">
-            <label htmlFor={`${uid}-after`}>Date range</label>
+            <label htmlFor={`${uid}-after`}>{t(locale, "dateRange")}</label>
             <div className="Feeds-dates">
-              <input id={`${uid}-after`} type="date" aria-label="After date" value={fields.after} onChange={e => update({ after: e.target.value })} />
-              <span aria-hidden="true">to</span>
-              <input type="date" aria-label="Before date" value={fields.before} onChange={e => update({ before: e.target.value })} />
+              <input id={`${uid}-after`} type="date" aria-label={t(locale, "afterDate")} value={fields.after} onChange={e => update({ after: e.target.value })} />
+              <span aria-hidden="true">{locale === "tr" ? "ile" : "to"}</span>
+              <input type="date" aria-label={t(locale, "beforeDate")} value={fields.before} onChange={e => update({ before: e.target.value })} />
             </div>
           </div>
         }
       </fieldset>
 
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-query`}>Query</label>
+        <label htmlFor={`${uid}-query`}>{t(locale, "query")}</label>
         <div className="Feeds-field">
           <textarea
             id={`${uid}-query`}
@@ -384,32 +391,32 @@ function SearchForm({ defaultColour, edition, editionName, onAdd }) {
           />
           <span className="Feeds-help">
             {manualQuery !== null ?
-              <>Editing manually. <button type="button" className="btn-link" onClick={() => setManualQuery(null)}>Back to builder</button></> :
-              "Generated from the builder - type here to write your own dork."}
-            {query && <>{' '}<a href={getGoogleNewsSearchUrl(query, edition)} target="_blank" rel="noopener noreferrer">Preview on Google News</a></>}
+              <>{t(locale, "editingManually")} <button type="button" className="btn-link" onClick={() => setManualQuery(null)}>{t(locale, "backToBuilder")}</button></> :
+              t(locale, "generatedQuery")}
+            {query && <>{' '}<a href={getGoogleNewsSearchUrl(query, edition)} target="_blank" rel="noopener noreferrer">{t(locale, "previewGoogle")}</a></>}
           </span>
         </div>
       </div>
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-name`}>Name</label>
+        <label htmlFor={`${uid}-name`}>{t(locale, "name")}</label>
         <input
           id={`${uid}-name`}
           className="Feeds-input"
-          placeholder="Optional - defaults to the query"
+          placeholder={t(locale, "optionalQueryName")}
           maxLength={40}
           value={name}
           onChange={e => setName(e.target.value)}
         />
       </div>
       <div className="App-formgroup">
-        <label htmlFor={`${uid}-colour`}>Colour</label>
+        <label htmlFor={`${uid}-colour`}>{t(locale, "colour")}</label>
         <input id={`${uid}-colour`} type="color" value={colour} onChange={e => setColour(e.target.value)} />
       </div>
       <div className="App-formgroup">
         <span className="Feeds-spacer" />
-        <button type="submit" disabled={status.state === "loading"}>Add search</button>
+        <button type="submit" disabled={status.state === "loading"}>{t(locale, "addSearch")}</button>
       </div>
-      <Status {...status} />
+      <Status {...status} locale={locale} />
     </form>
   );
 }
