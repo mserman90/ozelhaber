@@ -15,6 +15,9 @@ import { translate as t } from '../i18n.js';
  * @param {boolean} props.clusterDuplicates
  * @param {boolean} props.articleSummaryOnClick
  * @param {"dark"|"light"|"oled"} props.theme
+ * @param {string} props.notificationKeywords
+ * @param {boolean} props.notificationsEnabled
+ * @param {() => void} props.onEnableNotifications
  * @param {boolean} props.headerTop
  * @param {number} props.itemsPerCategory
  * @param {boolean} props.newTab
@@ -36,6 +39,9 @@ export function OptionsModal({
   clusterDuplicates,
   articleSummaryOnClick,
   theme = "dark",
+  notificationKeywords = "",
+  notificationsEnabled = false,
+  onEnableNotifications = () => {},
   headerTop,
   itemsPerCategory,
   newTab,
@@ -153,6 +159,14 @@ export function OptionsModal({
             <div>
               <input id="num-per-cat" type="number" min={0} value={itemsPerCategory} onChange={e => setSavedState({ itemsPerCategory: e.target.value })} />
               <p style={{ fontStyle: "italic", fontSize: "0.8em" }}>{t(locale, "maxItems")}</p>
+            </div>
+          </div>
+          <div className="App-formgroup">
+            <label htmlFor="notification-keywords">{t(locale, "notificationKeywords")}</label>
+            <div>
+              <input id="notification-keywords" value={notificationKeywords} placeholder="AI, climate, seçim" onChange={e => setSavedState({ notificationKeywords: e.target.value })} />
+              <p style={{ fontStyle: "italic", fontSize: "0.8em" }}>{t(locale, "notificationHelp")}</p>
+              <button type="button" onClick={onEnableNotifications}>{notificationsEnabled ? t(locale, "notificationsEnabled") : t(locale, "enableNotifications")}</button>
             </div>
           </div>
           <div className="App-formgroup">

@@ -1,7 +1,5 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
-
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const title = (url.searchParams.get('title') || 'NewsMap.JS').slice(0, 140)

@@ -19,6 +19,8 @@ type EditionProps = {
   showGradient: boolean
   sentimentHighlighting: boolean
   clusterDuplicates: boolean
+  notificationKeywords: string
+  notificationsEnabled: boolean
   itemsPerCategory: number
   refreshTime: number
   newTab: boolean
@@ -42,6 +44,8 @@ export default function Edition({
   showGradient,
   sentimentHighlighting,
   clusterDuplicates,
+  notificationKeywords,
+  notificationsEnabled,
   colours,
   itemsPerCategory,
   newTab,
@@ -57,6 +61,8 @@ export default function Edition({
     weightingMode,
     customSources,
     clusterDuplicates,
+    notificationKeywords,
+    notificationsEnabled,
   ) as Category[]
 
   useFastVisualRefresh(weightingMode === 'time', 60 * 1000)

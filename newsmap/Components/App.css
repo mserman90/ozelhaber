@@ -441,6 +441,21 @@ html[data-theme='oled'] .App-shade {
   .App-EditionContainer {
     min-height: 55dvh;
   }
+
+  .App-header-bottom .App-EditionContainer {
+    height: calc(100% - 184px);
+  }
+
+  .App-header-bottom .App-header {
+    position: fixed;
+    z-index: 1;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 184px;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 @keyframes sheet-enter {

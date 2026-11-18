@@ -41,6 +41,8 @@ type AppState = {
   showFeeds: boolean
   locale: 'en' | 'tr'
   theme: 'dark' | 'light' | 'oled'
+  notificationKeywords: string
+  notificationsEnabled: boolean
 }
 
 const defaultRefreshTime = 10 * 60 * 1000
@@ -71,6 +73,8 @@ function createDefaultState(): AppState {
     showFeeds: false,
     locale: 'en',
     theme: 'dark',
+    notificationKeywords: '',
+    notificationsEnabled: false,
   }
 }
 
@@ -93,6 +97,7 @@ function readSavedState(): Partial<AppState> {
 export default function App({ refreshTime, donationLink }: AppProps) {
   const [state, setState] = useState<AppState>(getInitialState)
   const [shareFeedback, setShareFeedback] = useState('')
+  const [notificationFeedback, setNotificationFeedback] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
   const trackingTimeout = useRef<number | undefined>(undefined)
@@ -171,6 +176,8 @@ export default function App({ refreshTime, donationLink }: AppProps) {
   useEffect(() => {
     document.documentElement.lang = state.locale
     document.documentElement.dataset.theme = state.theme
+    const themeColor = document.querySelector('meta[name="theme-color"]')
+    themeColor?.setAttribute('content', state.theme === 'light' ? '#f3f5f7' : '#000000')
   }, [state.locale, state.theme])
 
   useEffect(() => {
@@ -285,6 +292,23 @@ export default function App({ refreshTime, donationLink }: AppProps) {
     updateState({ selectedArticle: article })
   }
 
+  async function enableNotifications() {
+    if (!('Notification' in window)) {
+      setNotificationFeedback(t(state.locale, 'notificationsUnsupported'))
+      return
+    }
+    const permission = Notification.permission === 'default'
+      ? await Notification.requestPermission()
+      : Notification.permission
+    if (permission === 'granted') {
+      setSavedState({ notificationsEnabled: true })
+      setNotificationFeedback(t(state.locale, 'notificationsEnabled'))
+    } else {
+      setSavedState({ notificationsEnabled: false })
+      setNotificationFeedback(t(state.locale, 'notificationsBlocked'))
+    }
+  }
+
   async function shareMap() {
     const shareData = { title: document.title, url: window.location.href }
     try {
@@ -330,7 +354,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
               </label>
             )}
           </div>
-          {shareFeedback && <p className="App-share-feedback" role="status" aria-live="polite">{shareFeedback}</p>}
+          {(shareFeedback || notificationFeedback) && <p className="App-share-feedback" role="status" aria-live="polite">{shareFeedback || notificationFeedback}</p>}
           <p className="App-intro">
             {t(locale, 'intro')} <a href="https://news.google.com">Google News</a> {t(locale, 'andYourSources')}{' '}
             {t(locale, 'inspiredBy')} <a href="http://newsmap.jp">newsmap.jp</a>.{' '}
@@ -382,6 +406,8 @@ export default function App({ refreshTime, donationLink }: AppProps) {
                 showGradient={state.showGradient}
                 sentimentHighlighting={state.sentimentHighlighting}
                 clusterDuplicates={state.clusterDuplicates}
+                notificationKeywords={state.notificationKeywords}
+                notificationsEnabled={state.notificationsEnabled}
                 colours={colours}
                 categories={activeCategories}
                 customSources={state.customSources}
@@ -416,6 +442,9 @@ export default function App({ refreshTime, donationLink }: AppProps) {
           clusterDuplicates={state.clusterDuplicates}
           articleSummaryOnClick={state.articleSummaryOnClick}
           theme={state.theme}
+          notificationKeywords={state.notificationKeywords}
+          notificationsEnabled={state.notificationsEnabled}
+          onEnableNotifications={enableNotifications}
           itemsPerCategory={state.itemsPerCategory}
           newTab={state.newTab}
           enableSourcesModal={state.enableSourcesModal}

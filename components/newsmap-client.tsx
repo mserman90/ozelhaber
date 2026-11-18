@@ -1,6 +1,6 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import NewsMapRoot from './newsmap-root'
 
 const subscribe = () => () => {}
@@ -13,6 +13,12 @@ export function NewsMapClient() {
     () => true,
     () => false,
   )
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined)
+    }
+  }, [])
 
   return isClient ? <NewsMapRoot /> : null
 }

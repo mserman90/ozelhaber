@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   description:
     'A squarified treemap visualization of Google News based on the original newsmap.jp - now with your own RSS feeds and Google News keyword searches.',
   generator: 'v0.app',
-  icons: { icon: '/favicon.ico' },
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg', shortcut: '/favicon.ico' },
 }
 
 export const viewport: Viewport = {

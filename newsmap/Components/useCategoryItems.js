@@ -4,6 +4,8 @@ import { ucfirst } from '../util.js';
 import { SearchContext } from '../SearchContext.js';
 import { isSearchMatching } from '../isSearchMatching.js';
 import { headlinesMatch } from './headlineSimilarity.js';
+import { getOfflineCategory, saveOfflineCategory } from '../offlineCache';
+import { notifyNewKeywordMatches } from './notifyNewKeywordMatches.js';
 
 /**
  * @typedef {import('../types').Category} Category
@@ -18,8 +20,10 @@ import { headlinesMatch } from './headlineSimilarity.js';
  * @param {"time"|"sourceCount"|"source_count"|"sources"|"position"} weightMode
  * @param {{ [id: string]: import('../customSources.js').CustomSource }} customSources
  * @param {boolean} clusterDuplicates
+ * @param {string} notificationKeywords
+ * @param {boolean} notificationsEnabled
  */
-export function useCategoryItems(categories, refreshTime, edition, itemsPerCategory, weightMode = "time", customSources = {}, clusterDuplicates = false) {
+export function useCategoryItems(categories, refreshTime, edition, itemsPerCategory, weightMode = "time", customSources = {}, clusterDuplicates = false, notificationKeywords = "", notificationsEnabled = false) {
 
     const [categoryData, setCategoryData] = useState(/** @type {{ [id: string]: Category }} */({}));
     const loaderRef = useRef(/** @type {((cancellable: { current: boolean; }) => void)?} */(null));
@@ -59,11 +63,40 @@ export function useCategoryItems(categories, refreshTime, edition, itemsPerCateg
 
         for (const id of todoList) inFlightRef.current.delete(id);
 
-        const loadedCategories = results.map((result, i) => {
-            if (result.status === "fulfilled") return result.value;
-
+        const loadedCategories = await Promise.all(results.map(async (result, i) => {
             const id = todoList[i];
+            if (result.status === "fulfilled") {
+                const cacheKey = `${edition}_${id}`
+                if (notificationsEnabled && notificationKeywords.trim() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                    try {
+                        const previous = await getOfflineCategory(cacheKey)
+                        if (previous) {
+                            await notifyNewKeywordMatches(
+                                result.value.articles,
+                                new Set(previous.articles.map(article => article.id)),
+                                notificationKeywords,
+                            )
+                        }
+                    } catch {
+                        // Notification storage is optional; normal feed rendering continues.
+                    }
+                }
+                try {
+                    await saveOfflineCategory(cacheKey, result.value)
+                } catch {
+                    // Offline storage is an enhancement; a successful fetch remains usable.
+                }
+                return result.value
+            }
+
             console.warn(`Failed to load "${customSources[id]?.name || id}":`, result.reason);
+            try {
+                const cached = await getOfflineCategory(`${edition}_${id}`);
+                if (cached) return { ...cached, loadedAt: now, offline: true };
+            } catch {
+                // Continue with the empty state if browser storage is unavailable.
+            }
+
             // Mark as loaded so a broken feed waits for the next refresh instead
             // of being retried every few seconds.
             return {
@@ -74,7 +107,7 @@ export function useCategoryItems(categories, refreshTime, edition, itemsPerCateg
                 loadedAt: now,
                 error: result.reason instanceof Error ? result.reason.message : String(result.reason),
             };
-        });
+        }));
 
         if (!cancellable || cancellable.current) {
             setCategoryData(categoryData => {
