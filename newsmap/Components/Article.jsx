@@ -34,7 +34,17 @@ export default function Article({
   const [fontSize, setFontSize] = useState(10);
 
   const { title } = item;
-  const { width, height } = style;
+  // The treemap can briefly produce non-finite dimensions while its container
+  // is mounting or has no measurable size. Never forward those values to CSS.
+  const width = finiteNonNegative(style.width);
+  const height = finiteNonNegative(style.height);
+  const safeStyle = {
+    ...style,
+    top: finiteNonNegative(style.top),
+    left: finiteNonNegative(style.left),
+    width,
+    height,
+  };
 
   const searchValue = useContext(SearchContext);
 
@@ -111,7 +121,7 @@ export default function Article({
   const paddingHeight = rectHeight - padding * 2;
 
   return (
-    <li className={"Article-li " + (showImage && item.imageURL ? "Article-image" : "") + (showGradient ? "Article--shadow" : "")} style={{ ...style, backgroundColor, color: luminance(backgroundColor) > 176 ? "#111" : "#FFF" }}>
+    <li className={"Article-li " + (showImage && item.imageURL ? "Article-image" : "") + (showGradient ? "Article--shadow" : "")} style={{ ...safeStyle, backgroundColor, color: luminance(backgroundColor) > 176 ? "#111" : "#FFF" }}>
       {
         DEBUG_FONT_SIZE && <>
           <div style={{ position: "absolute", width: "100%", top: padding, height: maxFontHeight, borderBottom: "1px solid blue" }} />
@@ -213,12 +223,14 @@ function getMaxFontHeight(fontSize, maxWidth, maxHeight,) {
  * @param {number} maxWidth
  * @param {number} maxHeight
  */
-function getPadding(maxWidth, maxHeight) {
-  const ph = maxWidth * 0.03;
-  const pv = maxHeight * 0.03;
+function finiteNonNegative(value) {
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
 
-  const padding = Math.min(ph, pv);
-  return padding;
+function getPadding(maxWidth, maxHeight) {
+  const width = finiteNonNegative(maxWidth);
+  const height = finiteNonNegative(maxHeight);
+  return Math.min(width * 0.03, height * 0.03);
 }
 
 function getAgedColour(base, age) {
