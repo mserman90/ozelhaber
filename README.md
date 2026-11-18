@@ -1,44 +1,51 @@
 # 🗺️ ÖzelHaber - Yapay Zeka Destekli İnteraktif Haber Haritası
 
-**ÖzelHaber**, efsanevi haber görselleştirme platformu [newsmap.jp](http://newsmap.jp) ve açık kaynaklı NewsMap.JS mirasından esinlenerek geliştirilmiş; **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** ve **Google Gemini AI** ile güçlendirilmiş modern bir haber panosudur.
+[![Deploy to GitHub Pages](https://github.com/mserman90/ozelhaber/actions/workflows/deploy.yml/badge.svg)](https://github.com/mserman90/ozelhaber/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.4-black)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
+[![Zero-Key AI](https://img.shields.io/badge/AI-Free%20%26%20Zero--Key-brightgreen)](docs/ACADEMIC_WHITEPAPER.md)
+
+**ÖzelHaber**, efsanevi haber görselleştirme platformu [newsmap.jp](http://newsmap.jp) ve açık kaynaklı NewsMap.JS mirasından esinlenerek geliştirilmiş; **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** ve **Ücretsiz / Anahtarsız Açık Yapay Zeka (Zero-Key Open-LLM)** ile güçlendirilmiş modern bir haber panosudur.
+
+🌐 **Canlı Uygulama:** [https://mserman90.github.io/ozelhaber/](https://mserman90.github.io/ozelhaber/)  
+📄 **Akademik Teknik Makale (Whitepaper):** [docs/ACADEMIC_WHITEPAPER.md](docs/ACADEMIC_WHITEPAPER.md)  
+📖 **Kapsamlı Kullanım Kılavuzu:** [docs/USER_MANUAL.md](docs/USER_MANUAL.md)  
 
 ---
 
-## ✨ Özellikler
+## ✨ Öne Çıkan Özellikler
 
-### 1. 📊 Dinamik Treemap ve Izgara Görünümü
-- Haberlerin önemine, güncelliğine (zaman eskitme renkleri) ve kaynak yoğunluğuna göre dinamik olarak boyutlandırılan mozaik harita.
+### 1. 📊 Squarified Treemap ve Izgara Görünümü
+- Haberlerin önemine (sıralama / kaynak adedi) ve güncelliğine (zamansal renk eskitmesi) göre dinamik olarak ölçeklenen mozaik harita.
 - Treemap, Birleşik Treemap ve Izgara (Grid) düzen modları.
-- Renk paleti seçenekleri ve görsel degrade ayarları.
+- WCAG 2.1 bağıl parlaklık standardına göre otomatik kontrastlı tipografi.
 
-### 2. 🤖 Yapay Zeka ile Tek Tıkla Haber Özeti (AI Summary)
-- Haritadaki herhangi bir habere tıklandığında açılan detay penceresinden **"✨ Yapay Zeka Özeti"** alma imkanı.
-- **Google Gemini Flash API** entegrasyonu ile 3-4 maddelik hap çıkarım, haberin duygusu (Pozitif, Dengeli, Kritik, Acil) ve anahtar etiketler.
-- API anahtarı girilmediğinde bile çalışan akıllı yerel çıkarım (heuristic context) desteği.
-- Kullanıcıların kendi Gemini API anahtarını Ayarlar'dan tanımlayabilmesi.
+### 2. 🤖 %100 Ücretsiz & Anahtarsız Yapay Zeka Haber Özeti (Zero-Key AI)
+- **Kredi kartı veya API anahtarı gerekmez:** Açık model havuzu (Mistral / Pollinations) ve yerel kural tabanlı NLP motoru ile sıfır maliyetle çalışır.
+- Tek tıkla haberin kilit çıkarımı (Key Takeaway), 3 maddelik hap özeti, duygu analizi (*Pozitif, Dengeli, Kritik, Acil*) ve anahtar etiketler üretilir.
+- Statik GitHub Pages ortamında bile doğrudan tarayıcı üzerinden kesintisiz çalışır.
 
 ### 3. 📚 Zengin Hazır Kaynak Kataloğu (Preset Directory)
-- Tek tıkla haber haritasına eklenebilen popüler ve güvenilir RSS kaynakları:
+- Tek tıkla haritaya eklenebilen seçkin kaynaklar:
   - **Gündem:** Anadolu Ajansı, TRT Haber, BBC Türkçe, Sözcü, NTV, T24.
   - **Teknoloji:** Webrazzi, ShiftDelete.Net, DonanımHaber, Webtekno, TechCrunch, The Verge, Hacker News.
-  - **Ekonomi:** Bloomberg HT, Dünya Gazetesi, Investing TR.
-  - **Dünya:** BBC News, Reuters, The Guardian, New York Times.
-- Kendi özel RSS/Atom beslemelerinizi ekleyebilme.
-- Google News Dork arama motoru ile özel anahtar kelime sorguları oluşturma.
+  - **Ekonomi:** Bloomberg HT, Dünya Gazetesi.
+  - **Dünya:** BBC News World, Reuters, The Guardian.
+- Dilediğiniz özel RSS/Atom adresini ekleme ve gelişmiş Google News Dork sorguları oluşturma imkanı.
 
-### 4. 📱 Mobil ve Dokunmatik Dostu Arayüz
-- Mobil ve tablet ekranlar için optimize edilmiş alt çekmece (Bottom Sheet) detay penceresi.
-- Ekrandan taşmayan, yatay kaydırılabilir kategori ve filtre araç çubuğu.
-
-### 5. 🎨 Çoklu Görsel Temalar
+### 4. 🎨 3 Farklı Görsel Tema
 - **Klasik Koyu (Classic Dark):** Orijinal Newsmap atmosferi.
-- **AMOLED Siyah:** Saf siyah (#000) arka plan ile OLED ekranlarda pil tasarrufu ve yüksek kontrast.
-- **Modern Açık (Light Mode):** Aydınlık ortamlarda rahat okuma.
+- **AMOLED Siyah (Pure Black):** `#000000` saf siyah zemin ile OLED ekranlarda yüksek kontrast ve pil tasarrufu.
+- **Modern Açık Mod (Light Mode):** Aydınlık ortamlarda rahat okuma.
+
+### 5. 📱 Mobil ve Dokunmatik Dostu Arayüz
+- Mobil ekranlar için alttan açılan modern **Bottom Sheet** haber çekmecesi.
+- Yatay kaydırılabilir, taşmayan kompakt araç çubuğu.
 
 ### 6. 🔗 Paylaşılabilir Pano Durumları & PWA
-- Tek tıkla haritanın aktif filtrelerini ve bölgesini URL olarak panoya kopyalama ("Panoyu Paylaş").
-- Web App Manifest (`manifest.json`) ile mobil cihazlarda ana ekrana yüklenebilen PWA desteği.
-- Güvenli RSS Proxy (`/api/feed` & `/api/rss`) ile SSRF koruması, boyut sınırlandırması ve timeout yönetimi.
+- Üst bardaki **"🔗 Panoyu Paylaş"** butonu ile aktif bölge, kategori ve filtre ayarlarını içeren URL tek tıkla kopyalanabilir.
+- Web App Manifest (`manifest.json`) ile mobil cihazlarda ana ekrana yüklenebilen Progressive Web App (PWA) desteği.
 
 ---
 
@@ -46,7 +53,7 @@
 
 ### Gereksinimler
 - Node.js (v18+)
-- pnpm (veya npm / yarn)
+- pnpm (veya npm)
 
 ### Adımlar
 
@@ -63,20 +70,24 @@
    npm install
    ```
 
-3. (İsteğe bağlı) Yapay zeka özetleri için `.env.local` oluşturup Gemini API anahtarınızı tanımlayın:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
-   *(Not: API anahtarı girmeden de uygulama varsayılan akıllı özetleme moduyla çalışır ya da kullanıcılar arayüzdeki Ayarlar menüsünden kendi anahtarlarını girebilir).*
-
-4. Geliştirme sunucusunu başlatın:
+3. Geliştirme sunucusunu başlatın:
    ```bash
    pnpm dev
    # veya
    npm run dev
    ```
 
-5. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+4. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın. Yapay zeka ve hazır kaynaklar hiçbir ek yapılandırma gerektirmeden çalışacaktır.
+
+---
+
+## 🌐 GitHub Pages Dağıtımı
+
+Proje, GitHub Actions (`.github/workflows/deploy.yml`) ile `main` dalına yapılan her push işleminde otomatik olarak derlenir ve statik GitHub Pages üzerinde canlıya alınır:
+
+1. GitHub deponuzun **Settings > Pages** sekmesine gidin.
+2. **Build and deployment > Source** seçeneğini **GitHub Actions** olarak ayarlayın.
+3. Canlı adres: **`https://mserman90.github.io/ozelhaber/`**
 
 ---
 
@@ -84,33 +95,35 @@
 
 ```
 ozelhaber/
+├── .github/workflows/
+│   └── deploy.yml               # Otomatik GitHub Pages CI/CD iş akışı
+├── docs/
+│   ├── ACADEMIC_WHITEPAPER.md   # Akademik teknik makale ve formülasyonlar
+│   └── USER_MANUAL.md           # Kapsamlı kullanıcı kılavuzu ve ipuçları
 ├── app/
 │   ├── api/
 │   │   ├── feed/route.ts        # Güvenli dış RSS proxy (SSRF korumalı)
 │   │   ├── rss/[...path]/       # Google News RSS proxy
-│   │   └── summary/route.ts     # Gemini AI & akıllı haber özetleme endpoint'i
+│   │   └── summary/route.ts     # Sıfır-anahtarlı AI özetleme endpoint'i
 │   ├── layout.tsx               # Ana layout, PWA manifest, SEO ve metadata
-│   ├── page.tsx                 # Kök sayfa
-│   └── globals.css              # Global CSS & Tailwind v4
-├── components/
-│   ├── newsmap-client.tsx       # İstemci taraflı kök sarmalayıcı
-│   └── newsmap-root.tsx         # Hata yakalama ve ortam değişkeni bağlayıcısı
+│   └── globals.css              # Global stiller
+├── lib/
+│   ├── free-ai.ts               # Ücretsiz & sıfır-anahtarlı açık LLM/NLP motoru
+│   └── safe-fetch.ts            # SSRF ve boyut korumalı güvenli ağ katmanı
 ├── newsmap/
 │   ├── Components/
-│   │   ├── App.jsx              # Ana uygulama orkestratörü & UI
+│   │   ├── App.jsx              # Ana uygulama orkestratörü & tema yönetimi
 │   │   ├── Edition.jsx          # Bölge & kategori harita düzenleyici
-│   │   ├── Article.jsx          # Treemap hücre hesaplamaları & render
+│   │   ├── Article.jsx          # Squarified treemap hücre hesaplamaları
 │   │   ├── SourcesModal.jsx     # Gelişmiş Haber Detay & AI Özet Modalı
 │   │   ├── FeedsModal.jsx       # Özel kaynaklar & Hazır Katalog sekmesi
-│   │   ├── OptionsModal.jsx     # Ayarlar, temalar & Gemini API anahtarı
+│   │   ├── OptionsModal.jsx     # Ayarlar & temalar
 │   │   └── TreeMap.jsx          # Squarified treemap algoritması
 │   ├── data/
 │   │   ├── categories.json      # Varsayılan haber kategorileri
 │   │   ├── editions.json        # Google News desteklenen ülkeler/diller
 │   │   └── presetFeeds.json     # TR & Global seçkin hazır RSS kataloğu
 │   └── i18n.js                  # Çift dil desteği (Türkçe & İngilizce)
-├── types/
-│   └── newsmap.ts               # TypeScript modelleri ve arayüzler
 └── public/
     └── manifest.json            # PWA manifest
 ```

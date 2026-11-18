@@ -1,19 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { translate as t } from '../i18n.js';
+import { generateFreeAISummary } from '../../lib/free-ai';
 
 /**
  * @param {object} props
  * @param {"en"|"tr"} props.locale
  * @param {import('./Edition').Article} props.article
  * @param {boolean} props.newTab
- * @param {string} [props.geminiApiKey]
  * @param {() => void} props.onClose
  */
 export function SourcesModal({
   locale = "en",
   article,
   newTab = true,
-  geminiApiKey,
   onClose,
 }) {
   const [summaryData, setSummaryData] = useState(null);
@@ -39,23 +38,31 @@ export function SourcesModal({
     setSummaryError(null);
 
     try {
-      const res = await fetch('/api/summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: article.title,
-          url: article.url,
-          source: mainSource.name,
-          locale,
-          apiKey: geminiApiKey || undefined,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Summary request failed (${res.status})`);
+      // 1. Try server endpoint first if available
+      let data = null;
+      try {
+        const res = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: article.title,
+            url: article.url,
+            source: mainSource.name,
+            locale,
+          }),
+        });
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Fallback to client-side free AI engine (e.g. on GitHub Pages)
       }
 
-      const data = await res.json();
+      // 2. If no server response or on static GitHub Pages, run free zero-key client engine
+      if (!data) {
+        data = await generateFreeAISummary(article.title, mainSource.name, locale);
+      }
+
       setSummaryData(data);
     } catch (err) {
       console.error('Failed to get summary:', err);
@@ -214,6 +221,9 @@ export function SourcesModal({
                 }}
               >
                 ✨ {t(locale, 'aiSummary')}
+                <span style={{ fontSize: '0.7rem', opacity: 0.8, background: 'rgba(255,255,255,0.2)', padding: '1px 5px', borderRadius: '4px' }}>
+                  {locale === 'tr' ? 'Ücretsiz' : 'Free'}
+                </span>
               </button>
             )}
           </div>
@@ -264,10 +274,16 @@ export function SourcesModal({
                 marginBottom: '1.25rem',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#a78bfa' }}>
-                  ✨ {t(locale, 'aiSummary')}
-                </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#a78bfa' }}>
+                    ✨ {t(locale, 'aiSummary')}
+                  </span>
+                  <span style={{ fontSize: '0.65rem', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #059669', padding: '1px 6px', borderRadius: '4px' }}>
+                    {locale === 'tr' ? 'Ücretsiz & Anahtarsız' : 'Zero-Key & Free'}
+                  </span>
+                </div>
+
                 {activeSentiment && (
                   <span
                     style={{
@@ -326,9 +342,9 @@ export function SourcesModal({
                 </div>
               )}
 
-              {summaryData.note && (
-                <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.75rem', color: '#71717a', fontStyle: 'italic' }}>
-                  💡 {summaryData.note}
+              {summaryData.modelUsed && (
+                <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.75rem', color: '#71717a' }}>
+                  ⚡ Model: {summaryData.modelUsed}
                 </p>
               )}
             </div>
