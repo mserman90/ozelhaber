@@ -1,0 +1,302 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.App {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.App-EditionContainer {
+  display: flex;
+  height: 100%;
+}
+
+.App-header-bottom .App-EditionContainer {
+  height: calc(100% - 30px);
+}
+
+.App-EditionContainer:fullscreen {
+  height: 100%;
+  width: 100%;
+  background-color: #111;
+  /* Issue #34 */
+  padding-top: 1px;
+}
+
+button {
+  background: none;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  padding: 4px 8px;
+}
+
+button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/*
+  Give space for mouse to rest at bottom of screen without hovering over
+  articles. See Issue #34
+ */
+.App-EditionContainer:fullscreen::after {
+  content: "";
+  background: black;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+}
+
+.App-Edition {
+  transition: all 1s;
+  /* First loading */
+  animation: fade-bg 1s;
+}
+
+.App-Edition:not(:empty) {
+  /* Toggling all categories on/off */
+  background: rgb(9 9 9 / 0.8);
+}
+
+@keyframes fade-bg {
+  0% {
+    background: rgb(9 9 9 / 0);
+  }
+
+  100% {
+    background: rgb(9 9 9 / 0.8);
+  }
+}
+
+.App-header {
+  background-color: #222;
+  min-height: 48px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header-top .App-header {
+  flex-direction: column-reverse;
+}
+
+.App-header-config {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+
+  .App-header-top .App-header,
+  .App-header-bottom .App-header {
+    flex-direction: row;
+  }
+
+  .App-header-config-topline {
+    display: flex;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  .App-header-top .App-EditionContainer,
+  .App-header-bottom .App-EditionContainer {
+    height: calc(100% - 48px);
+  }
+}
+
+.App-header-controls {
+  margin: 0 4px;
+  white-space: nowrap;
+}
+
+.App-header-controls button {
+  padding: 2px 8px;
+}
+
+.App-title {
+  font-size: 1em;
+  margin: 8px 0 0 10px;
+}
+
+.App-title a {
+  color: #FFF;
+  text-decoration: none;
+}
+
+.App-intro {
+  font-size: small;
+  margin: 0 10px;
+}
+
+.App-intro a {
+  color: lightblue;
+}
+
+.App-category-chooser {
+  display: flex;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #222;
+}
+
+/* Right-align when it fits, but keep every chip reachable when it scrolls */
+.App-category-chooser > .App-category-key:first-child {
+  margin-left: auto;
+}
+
+.App-category-chooser > .App-category-key {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.App-header-config-topline > label {
+  white-space: nowrap;
+}
+
+.App-category-key {
+  font-size: 0.75em;
+  font-weight: bold;
+  padding: 8px 16px;
+  height: 48px;
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.App-category-key:focus-within {
+  border-color: white;
+}
+
+.App-category-key input {
+  width: 0;
+  appearance: none;
+}
+
+.App-shade {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  /* Appear above any focused .Article-li */
+  z-index: 2;
+}
+
+.App-modal {
+  box-sizing: border-box;
+  width: 480px;
+  max-width: 98%;
+  padding: 16px;
+  background-color: #222;
+  border-radius: 5px;
+  border: 1px solid #686868;
+  margin: 0 auto;
+  color: white;
+  position: fixed;
+  top: 2em;
+  bottom: 2em;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-modalbody {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #222 grey;
+}
+
+@media (min-width: 1024px) {
+  .App-modal {
+    top: 4em;
+    bottom: 4em;
+    max-height: 700px;
+  }
+}
+
+.App-modal h1 {
+  margin-top: 0.25em;
+}
+
+.App-formgroup {
+  display: flex;
+  margin-bottom: 0.8em;
+}
+
+.App-modal label {
+  flex: 0 0 120px;
+}
+
+.App-modal select {
+  padding: 2px;
+}
+
+.App-palette {
+  transition: 0.5s all;
+  padding: 2px 4px;
+  outline: 1px solid transparent;
+  display: inline-block;
+}
+
+.App-palette:hover {
+  outline: 1px solid #686868;
+}
+
+.App-palettelabel {
+  display: inline-block;
+  width: 120px;
+}
+
+.App-swatch {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #686868;
+  vertical-align: middle;
+  margin: 1px;
+}
+
+.App-Options a {
+  color: white;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: underline;
+}
+
+.SourcesModal-Source {
+  text-decoration: none;
+}
+
+.SourcesModal-Source section {
+  outline: 1px solid transparent;
+  transition: all 0.5s;
+  margin: 0.25em;
+  padding: 0.25em;
+  cursor: pointer;
+}
+
+.SourcesModal-Source section:hover {
+  outline-color: white;
+}
+
+.SourcesModal-Source h1 {
+  margin-bottom: 0;
+}
+
+.SourcesModal-Source p {
+  margin-top: 0;
+}

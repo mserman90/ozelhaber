@@ -1,0 +1,245 @@
+.Feeds-modal {
+  width: 600px;
+}
+
+@media (min-width: 1024px) {
+  .Feeds-modal.App-modal {
+    max-height: 820px;
+  }
+}
+
+.Feeds-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.Feeds-tab {
+  border-color: #686868;
+  color: #bbb;
+}
+
+.Feeds-tab--active {
+  border-color: white;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.Feeds-form {
+  padding-right: 4px;
+}
+
+.Feeds-hint {
+  font-size: 0.85em;
+  color: #bbb;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.Feeds-hint strong {
+  color: white;
+}
+
+.Feeds-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #111;
+  color: white;
+  border: 1px solid #686868;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 0.9em;
+}
+
+.Feeds-input:focus-visible,
+.Feeds-modal select:focus-visible,
+.Feeds-modal button:focus-visible {
+  outline: 2px solid lightblue;
+  outline-offset: 1px;
+}
+
+.Feeds-query {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: vertical;
+}
+
+.Feeds-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.Feeds-help {
+  font-size: 0.75em;
+  color: #999;
+  line-height: 1.4;
+}
+
+.Feeds-help a {
+  color: lightblue;
+}
+
+.Feeds-help .btn-link {
+  font-size: inherit;
+  padding: 0;
+}
+
+.Feeds-fieldset {
+  border: 1px solid #444;
+  border-radius: 5px;
+  padding: 12px 12px 4px;
+  margin: 0 0 12px;
+}
+
+.Feeds-fieldset:disabled {
+  opacity: 0.45;
+}
+
+.Feeds-fieldset legend {
+  font-size: 0.8em;
+  color: #bbb;
+  padding: 0 4px;
+}
+
+.Feeds-dates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+}
+
+.Feeds-dates input {
+  background-color: #111;
+  color: white;
+  border: 1px solid #686868;
+  border-radius: 4px;
+  padding: 4px;
+  color-scheme: dark;
+}
+
+.Feeds-modal input[type="color"] {
+  width: 48px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #686868;
+  background: none;
+  cursor: pointer;
+}
+
+.Feeds-spacer {
+  flex: 0 0 120px;
+}
+
+.Feeds-modal button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.Feeds-status {
+  font-size: 0.85em;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.Feeds-status--error {
+  border-color: #ff4444;
+  color: #ff8a8a;
+}
+
+.Feeds-status--success {
+  border-color: #449c1f;
+  color: #a6e08a;
+}
+
+.Feeds-status--loading {
+  color: #bbb;
+}
+
+.Feeds-heading {
+  font-size: 1em;
+  margin: 20px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid #444;
+}
+
+.Feeds-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.Feeds-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background-color: #1a1a1a;
+  border-radius: 4px;
+}
+
+.Feeds-swatch {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+.Feeds-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.Feeds-row-name {
+  font-weight: bold;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.Feeds-badge {
+  font-weight: normal;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #686868;
+  border-radius: 3px;
+  padding: 0 4px;
+  color: #bbb;
+}
+
+.Feeds-row-detail {
+  font-size: 0.75em;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.Feeds-modal .Feeds-row-toggle {
+  flex: 0 0 auto;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.Feeds-remove {
+  font-size: 0.8em;
+  border-color: #686868;
+}
