@@ -7,9 +7,10 @@ import {
   pickColour,
   whenOptions,
 } from '../customSources.js';
-import presetFeeds from '../data/presetFeeds.json';
 import './FeedsModal.css';
 import { translate as t } from '../i18n.js';
+import { FeedDirectory } from './FeedDirectory.jsx';
+import presetFeeds from '../data/presetFeeds.json';
 
 /**
  * @typedef {import('../customSources.js').CustomSource} CustomSource
@@ -38,7 +39,7 @@ export function FeedsModal({
   onToggle,
   onClose,
 }) {
-  const [tab, setTab] = useState(/** @type {"preset"|"rss"|"search"} */("preset"));
+  const [tab, setTab] = useState(/** @type {"preset"|"rss"|"search"|"directory"} */("preset"));
   const sources = Object.values(customSources);
   const nextColour = pickColour(sources.length);
 
@@ -75,6 +76,16 @@ export function FeedsModal({
           </button>
           <button
             role="tab"
+            id="tab-directory"
+            aria-selected={tab === "directory"}
+            aria-controls="panel-directory"
+            className={tab === "directory" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
+            onClick={() => setTab("directory")}
+          >
+            {t(locale, "directoryTab")}
+          </button>
+          <button
+            role="tab"
             id="tab-search"
             aria-selected={tab === "search"}
             aria-controls="panel-search"
@@ -85,17 +96,11 @@ export function FeedsModal({
           </button>
         </div>
         <div className="App-modalbody">
-          {tab === "preset" ? (
-            <PresetCatalog
-              locale={locale}
-              customSources={customSources}
-              onAdd={onAdd}
-            />
-          ) : tab === "rss" ? (
-            <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />
-          ) : (
-            <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />
-          )}
+          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
+          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
+          {tab === "rss" && <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />}
+          {tab === "search" && <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />}
+          {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
 
           <h2 className="Feeds-heading">{t(locale, "yourSources")} ({sources.length})</h2>
           {sources.length === 0 ?
@@ -130,131 +135,70 @@ export function FeedsModal({
  * @param {(source: CustomSource) => void} props.onAdd
  */
 function PresetCatalog({ locale, customSources, onAdd }) {
-  const [filterCategory, setFilterCategory] = useState("all");
-  const existingUrls = new Set(Object.values(customSources).map(s => s.url));
+  const [filter, setFilter] = useState('all')
+  const [addingUrl, setAddingUrl] = useState('')
+  const [error, setError] = useState('')
+  const existingUrls = new Set(Object.values(customSources).map(source => source.url).filter(Boolean))
+  const groups = [
+    { id: 'all', label: t(locale, 'presetAll') },
+    { id: 'general', label: t(locale, 'presetGeneral') },
+    { id: 'tech', label: t(locale, 'presetTech') },
+    { id: 'economy', label: t(locale, 'presetEconomy') },
+    { id: 'global', label: t(locale, 'presetGlobal') },
+  ]
+  const feeds = presetFeeds.filter(feed => filter === 'all' || feed.category === filter)
 
-  const filteredPresets = presetFeeds.filter(feed => {
-    if (filterCategory === "all") return true;
-    return feed.category === filterCategory;
-  });
-
-  const categories = [
-    { id: "all", label: t(locale, "presetAll") },
-    { id: "general", label: t(locale, "presetGeneral") },
-    { id: "tech", label: t(locale, "presetTech") },
-    { id: "economy", label: t(locale, "presetEconomy") },
-    { id: "global", label: t(locale, "presetGlobal") },
-  ];
+  async function addPreset(preset) {
+    setAddingUrl(preset.url)
+    setError('')
+    try {
+      const feed = await getCustomFeed({ url: preset.url })
+      if (feed.articles.length === 0) throw new Error(t(locale, 'feedEmpty'))
+      onAdd({
+        id: createSourceId('rss'),
+        name: preset.name,
+        type: 'rss',
+        url: preset.url,
+        color: preset.color,
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t(locale, 'feedLoadError'))
+    } finally {
+      setAddingUrl('')
+    }
+  }
 
   return (
-    <div className="Feeds-presets">
-      <p className="Feeds-hint" style={{ marginBottom: "0.75rem" }}>
-        {t(locale, "presetHint")}
-      </p>
-
-      <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-        {categories.map(cat => (
-          <button
-            key={cat.id}
-            type="button"
-            className={`Feeds-cat-btn ${filterCategory === cat.id ? "Feeds-cat-btn--active" : ""}`}
-            onClick={() => setFilterCategory(cat.id)}
-            style={{
-              padding: "4px 10px",
-              fontSize: "0.8rem",
-              borderRadius: "4px",
-              cursor: "pointer",
-              background: filterCategory === cat.id ? "#3b82f6" : "#2a2a2a",
-              color: "#fff",
-              border: "1px solid #444",
-            }}
-          >
-            {cat.label}
+    <section className="Feeds-presets" id="panel-preset" role="tabpanel" aria-labelledby="tab-preset">
+      <p className="Feeds-hint">{t(locale, 'presetHint')}</p>
+      <div className="Feeds-tabs" aria-label={t(locale, 'directoryTitle')}>
+        {groups.map(group => (
+          <button key={group.id} type="button" className={filter === group.id ? 'Feeds-tab Feeds-tab--active' : 'Feeds-tab'} onClick={() => setFilter(group.id)}>
+            {group.label}
           </button>
         ))}
       </div>
-
-      <div
-        className="Feeds-preset-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: "0.75rem",
-          maxHeight: "260px",
-          overflowY: "auto",
-          paddingRight: "4px",
-          marginBottom: "1.25rem",
-        }}
-      >
-        {filteredPresets.map(preset => {
-          const isAdded = existingUrls.has(preset.url);
-
+      {error && <p className="Feeds-status Feeds-status--error" role="alert">{error}</p>}
+      <div className="Feeds-preset-grid">
+        {feeds.map(preset => {
+          const added = existingUrls.has(preset.url)
+          const loading = addingUrl === preset.url
           return (
-            <div
-              key={preset.id}
-              style={{
-                background: "#1e1e1e",
-                border: `1px solid ${isAdded ? preset.color : "#333"}`,
-                borderRadius: "6px",
-                padding: "0.6rem 0.75rem",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "10px",
-                      height: "10px",
-                      borderRadius: "50%",
-                      backgroundColor: preset.color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <strong style={{ fontSize: "0.9rem", color: "#f3f4f6" }}>{preset.name}</strong>
-                </div>
-                {preset.description && (
-                  <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.75rem", color: "#9ca3af", lineHeight: "1.3" }}>
-                    {preset.description}
-                  </p>
-                )}
+            <article key={preset.id} className="Feeds-preset-card">
+              <span className="Feeds-swatch" style={{ backgroundColor: preset.color }} aria-hidden="true" />
+              <div className="Feeds-preset-description">
+                <strong>{preset.name}</strong>
+                <small>{preset.description}</small>
               </div>
-              <button
-                type="button"
-                disabled={isAdded}
-                onClick={() => {
-                  onAdd({
-                    id: createSourceId(preset.name),
-                    name: preset.name,
-                    type: "rss",
-                    url: preset.url,
-                    color: preset.color,
-                  });
-                }}
-                style={{
-                  alignSelf: "flex-start",
-                  fontSize: "0.75rem",
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  border: "none",
-                  cursor: isAdded ? "default" : "pointer",
-                  backgroundColor: isAdded ? "#15803d" : "#2563eb",
-                  color: "#fff",
-                  fontWeight: 500,
-                  transition: "background 0.2s",
-                }}
-              >
-                {isAdded ? `✓ ${t(locale, "addedPreset")}` : `+ ${t(locale, "addPreset")}`}
+              <button type="button" disabled={added || !!addingUrl} onClick={() => addPreset(preset)}>
+                {added ? t(locale, 'directoryAdded') : loading ? t(locale, 'checkingSource') : t(locale, 'addPreset')}
               </button>
-            </div>
-          );
+            </article>
+          )
         })}
       </div>
-    </div>
-  );
+    </section>
+  )
 }
 
 /**
@@ -291,14 +235,28 @@ function SourceRow({ locale, source, visible, edition, onToggle, onRemove }) {
         {t(locale, "show")}
       </label>
       <button
-        type="button"
-        className="Feeds-row-remove"
-        aria-label={`${t(locale, "remove")} ${source.name}`}
+        className="Feeds-remove"
         onClick={() => onRemove(source.id)}
+        aria-label={`${t(locale, "remove")} ${source.name}`}
       >
         {t(locale, "remove")}
       </button>
     </li>
+  );
+}
+
+/**
+ * @param {{ state: "idle"|"loading"|"error"|"success", message?: string }} props
+ */
+function Status({ locale, state, message }) {
+  if (state === "idle") return null;
+  return (
+    <p
+      className={`Feeds-status Feeds-status--${state}`}
+      role={state === "error" ? "alert" : "status"}
+    >
+      {state === "loading" ? t(locale, "checkingSource") : message}
+    </p>
   );
 }
 
@@ -309,58 +267,62 @@ function SourceRow({ locale, source, visible, edition, onToggle, onRemove }) {
  * @param {(source: CustomSource) => void} props.onAdd
  */
 function RssForm({ locale, defaultColour, onAdd }) {
+  const uid = useId();
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [colour, setColour] = useState(defaultColour);
-  const [checking, setChecking] = useState(false);
-  const [error, setError] = useState(/** @type {string?} */(null));
-  const urlId = useId();
-  const nameId = useId();
-  const colourId = useId();
+  const [status, setStatus] = useState(/** @type {{ state: "idle"|"loading"|"error"|"success", message?: string }} */({ state: "idle" }));
 
+  /**
+   * @param {import('react').FormEvent} e
+   */
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
-    const trimmed = url.trim();
-    if (!trimmed) {
-      setError(t(locale, "invalidUrl"));
+    let normalised = url.trim();
+    if (normalised && !/^https?:\/\//i.test(normalised)) {
+      normalised = `https://${normalised}`;
+    }
+
+    try {
+      new URL(normalised);
+    } catch (err) {
+      setStatus({ state: "error", message: t(locale, "invalidUrl") });
       return;
     }
 
-    setChecking(true);
+    setStatus({ state: "loading" });
     try {
-      const feed = await getCustomFeed(trimmed);
-      const chosenName = name.trim() || feed.name || trimmed;
-      onAdd({
-        id: createSourceId(chosenName),
-        name: chosenName,
-        type: "rss",
-        url: trimmed,
-        color: colour,
-      });
+      const feed = await getCustomFeed({ url: normalised });
+      if (feed.articles.length === 0) {
+        setStatus({ state: "error", message: t(locale, "feedEmpty") });
+        return;
+      }
+      const finalName = name.trim() || feed.title || new URL(normalised).hostname;
+      onAdd({ id: createSourceId("rss"), type: "rss", name: finalName, url: normalised, color: colour });
+      setStatus({ state: "success", message: locale === "tr" ? `“${finalName}” ${feed.articles.length} haberle eklendi.` : `Added "${finalName}" with ${feed.articles.length} articles.` });
       setUrl("");
       setName("");
     } catch (err) {
-      if (err && typeof err === "object" && "status" in err) {
-        if (err.status === 413) setError(t(locale, "feedTooLarge"));
-        else if (err.status === 422) setError(t(locale, "invalidFeed"));
-        else setError(err.message || t(locale, "feedLoadError"));
-      } else {
-        setError(err instanceof Error ? err.message : t(locale, "feedLoadError"));
-      }
-    } finally {
-      setChecking(false);
+      setStatus({ state: "error", message: err instanceof Error ? (t(locale, err.message === "Feed is too large (max 3 MB)" ? "feedTooLarge" : err.message === "URL did not return an RSS or Atom feed" ? "invalidFeed" : "feedLoadError")) : t(locale, "feedLoadError") });
     }
   }
 
   return (
-    <form className="Feeds-form" onSubmit={handleSubmit}>
+    <form
+      id="panel-rss"
+      role="tabpanel"
+      aria-labelledby="tab-rss"
+      onSubmit={handleSubmit}
+      className="Feeds-form"
+    >
       <p className="Feeds-hint">{t(locale, "rssHint")}</p>
       <div className="App-formgroup">
-        <label htmlFor={urlId}>{t(locale, "feedUrl")}</label>
+        <label htmlFor={`${uid}-url`}>{t(locale, "feedUrl")}</label>
         <input
-          id={urlId}
+          id={`${uid}-url`}
+          className="Feeds-input"
           type="url"
+          inputMode="url"
           required
           placeholder="https://feeds.bbci.co.uk/news/rss.xml"
           value={url}
@@ -368,30 +330,25 @@ function RssForm({ locale, defaultColour, onAdd }) {
         />
       </div>
       <div className="App-formgroup">
-        <label htmlFor={nameId}>{t(locale, "name")}</label>
+        <label htmlFor={`${uid}-name`}>{t(locale, "name")}</label>
         <input
-          id={nameId}
-          type="text"
+          id={`${uid}-name`}
+          className="Feeds-input"
           placeholder={t(locale, "optionalFeedName")}
+          maxLength={40}
           value={name}
           onChange={e => setName(e.target.value)}
         />
       </div>
       <div className="App-formgroup">
-        <label htmlFor={colourId}>{t(locale, "colour")}</label>
-        <input
-          id={colourId}
-          type="color"
-          value={colour}
-          onChange={e => setColour(e.target.value)}
-        />
+        <label htmlFor={`${uid}-colour`}>{t(locale, "colour")}</label>
+        <input id={`${uid}-colour`} type="color" value={colour} onChange={e => setColour(e.target.value)} />
       </div>
-      {error && <p className="Feeds-error" role="alert">{error}</p>}
-      <div className="Feeds-form-actions">
-        <button type="submit" disabled={checking}>
-          {checking ? t(locale, "checkingSource") : t(locale, "addFeed")}
-        </button>
+      <div className="App-formgroup">
+        <span className="Feeds-spacer" />
+        <button type="submit" disabled={status.state === "loading"}>{t(locale, "addFeed")}</button>
       </div>
+      <Status {...status} locale={locale} />
     </form>
   );
 }
@@ -405,266 +362,157 @@ function RssForm({ locale, defaultColour, onAdd }) {
  * @param {(source: CustomSource) => void} props.onAdd
  */
 function SearchForm({ locale, defaultColour, edition, editionName, onAdd }) {
+  const uid = useId();
   const [fields, setFields] = useState(emptyDorkFields);
-  const [manualQuery, setManualQuery] = useState("");
+  const [manualQuery, setManualQuery] = useState(/** @type {string?} */(null));
   const [name, setName] = useState("");
   const [colour, setColour] = useState(defaultColour);
-  const [checking, setChecking] = useState(false);
-  const [error, setError] = useState(/** @type {string?} */(null));
-  const [manualOverride, setManualOverride] = useState(false);
+  const [status, setStatus] = useState(/** @type {{ state: "idle"|"loading"|"error"|"success", message?: string }} */({ state: "idle" }));
 
-  const query = manualOverride ? manualQuery : buildDorkQuery(fields);
-  const nameId = useId();
-  const colourId = useId();
+  const builtQuery = buildDorkQuery(fields);
+  const query = (manualQuery ?? builtQuery).trim();
 
-  function updateField(k, v) {
-    setFields(prev => ({ ...prev, [k]: v }));
-    setManualOverride(false);
+  /**
+   * @param {Partial<import('../customSources.js').DorkFields>} patch
+   */
+  function update(patch) {
+    setFields(f => ({ ...f, ...patch }));
   }
 
+  /**
+   * @param {import('react').FormEvent} e
+   */
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
-    const finalQuery = query.trim();
-    if (!finalQuery) {
-      setError(t(locale, "enterSearch"));
+    if (!query) {
+      setStatus({ state: "error", message: t(locale, "enterSearch") });
       return;
     }
 
-    setChecking(true);
+    setStatus({ state: "loading" });
     try {
-      const items = await searchNews(finalQuery, edition);
-      if (!items || items.length === 0) {
-        setError(t(locale, "noSearchResults"));
+      const result = await searchNews({ query, edition });
+      if (result.articles.length === 0) {
+        setStatus({ state: "error", message: t(locale, "noSearchResults") });
         return;
       }
-      const chosenName = name.trim() || finalQuery;
-      onAdd({
-        id: createSourceId(chosenName),
-        name: chosenName,
-        type: "search",
-        query: finalQuery,
-        color: colour,
-      });
-      setFields(emptyDorkFields());
-      setManualQuery("");
+      const finalName = name.trim() || query.slice(0, 40);
+      onAdd({ id: createSourceId("search"), type: "search", name: finalName, query, color: colour });
+      setStatus({ state: "success", message: locale === "tr" ? `“${finalName}” ${result.articles.length} haberle eklendi.` : `Added "${finalName}" with ${result.articles.length} articles.` });
+      setFields(emptyDorkFields);
+      setManualQuery(null);
       setName("");
-      setManualOverride(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t(locale, "searchError"));
-    } finally {
-      setChecking(false);
+      setStatus({ state: "error", message: err instanceof Error ? err.message : t(locale, "searchError") });
     }
   }
 
-  const previewUrl = query.trim() ? getGoogleNewsSearchUrl(query.trim(), edition) : null;
+  /**
+   * @param {keyof import('../customSources.js').DorkFields} key
+   * @param {string} label
+   * @param {string} placeholder
+   * @param {string} [help]
+   */
+  function field(key, label, placeholder, help) {
+    const id = `${uid}-${key}`;
+    return (
+      <div className="App-formgroup">
+        <label htmlFor={id}>{label}</label>
+        <div className="Feeds-field">
+          <input
+            id={id}
+            className="Feeds-input"
+            placeholder={placeholder}
+            value={fields[key]}
+            aria-describedby={help ? `${id}-help` : undefined}
+            onChange={e => update({ [key]: e.target.value })}
+          />
+          {help && <span id={`${id}-help`} className="Feeds-help">{help}</span>}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <form className="Feeds-form Feeds-form--search" onSubmit={handleSubmit}>
+    <form
+      id="panel-search"
+      role="tabpanel"
+      aria-labelledby="tab-search"
+      onSubmit={handleSubmit}
+      className="Feeds-form"
+    >
       <p className="Feeds-hint">
-        {t(locale, "addGoogleSearchDescription")}{' '}
-        <strong>{editionName}</strong> ({edition}).
+        {t(locale, "addGoogleSearchDescription")} <strong>{editionName}</strong>.
       </p>
 
-      <fieldset className="Feeds-fieldset">
+      <fieldset className="Feeds-fieldset" disabled={manualQuery !== null}>
         <legend>{t(locale, "queryBuilder")}</legend>
-
+        {field("allWords", t(locale, "allWords"), "climate summit")}
+        {field("exactPhrase", t(locale, "exactPhrase"), "artificial intelligence")}
+        {field("anyWords", t(locale, "anyWords"), "nvidia, amd, intel", t(locale, "combinedWithOr"))}
+        {field("excludeWords", t(locale, "exclude"), "rumour, opinion", t(locale, "prefixedWith"))}
+        {field("sites", t(locale, "onlySites"), "reuters.com, bbc.co.uk", t(locale, "siteOperator"))}
+        {field("excludeSites", t(locale, "excludeSites"), "example.com", "-site:")}
+        {field("inTitle", t(locale, "inHeadline"), "election", t(locale, "inTitleOperator"))}
+        {field("inUrl", t(locale, "inUrl"), "politics", t(locale, "inUrlOperator"))}
         <div className="App-formgroup">
-          <label htmlFor="dork-all">{t(locale, "allWords")}</label>
-          <input
-            id="dork-all"
-            type="text"
-            placeholder="merger acquisition"
-            value={fields.allWords}
-            onChange={e => updateField("allWords", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-exact">{t(locale, "exactPhrase")}</label>
-          <input
-            id="dork-exact"
-            type="text"
-            placeholder="artificial intelligence"
-            value={fields.exactPhrase}
-            onChange={e => updateField("exactPhrase", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-any">{t(locale, "anyWords")} <span className="Feeds-input-hint">({t(locale, "combinedWithOr")})</span></label>
-          <input
-            id="dork-any"
-            type="text"
-            placeholder="NASA ESA SpaceX"
-            value={fields.anyWords}
-            onChange={e => updateField("anyWords", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-none">{t(locale, "exclude")} <span className="Feeds-input-hint">({t(locale, "prefixedWith")})</span></label>
-          <input
-            id="dork-none"
-            type="text"
-            placeholder="crypto bitcoin"
-            value={fields.noneWords}
-            onChange={e => updateField("noneWords", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-sites">{t(locale, "onlySites")} <span className="Feeds-input-hint">({t(locale, "siteOperator")})</span></label>
-          <input
-            id="dork-sites"
-            type="text"
-            placeholder="reuters.com, bbc.com"
-            value={fields.sites}
-            onChange={e => updateField("sites", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-exclude-sites">{t(locale, "excludeSites")} <span className="Feeds-input-hint">({t(locale, "siteOperator")})</span></label>
-          <input
-            id="dork-exclude-sites"
-            type="text"
-            placeholder="clickbait.com"
-            value={fields.excludeSites}
-            onChange={e => updateField("excludeSites", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-intitle">{t(locale, "inHeadline")} <span className="Feeds-input-hint">({t(locale, "inTitleOperator")})</span></label>
-          <input
-            id="dork-intitle"
-            type="text"
-            placeholder="launch"
-            value={fields.intitle}
-            onChange={e => updateField("intitle", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-inurl">{t(locale, "inUrl")} <span className="Feeds-input-hint">({t(locale, "inUrlOperator")})</span></label>
-          <input
-            id="dork-inurl"
-            type="text"
-            placeholder="economy"
-            value={fields.inurl}
-            onChange={e => updateField("inurl", e.target.value)}
-          />
-        </div>
-
-        <div className="App-formgroup">
-          <label htmlFor="dork-when">{t(locale, "timeRange")}</label>
-          <select
-            id="dork-when"
-            value={fields.when}
-            onChange={e => updateField("when", e.target.value)}
-          >
-            {whenOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>
-                {t(locale, opt.labelKey)}
-              </option>
-            ))}
+          <label htmlFor={`${uid}-when`}>{t(locale, "timeRange")}</label>
+          <select id={`${uid}-when`} value={fields.when} onChange={e => update({ when: e.target.value })}>
+            {whenOptions.map(o => <option key={o.value} value={o.value}>{t(locale, ({ "": "anyTime", "1h": "pastHour", "12h": "past12Hours", "1d": "past24Hours", "7d": "pastWeek", "30d": "pastMonth", "1y": "pastYear" })[o.value])}</option>)}
           </select>
         </div>
-
-        {fields.when === "" && (
-          <div className="Feeds-daterange">
-            <div className="App-formgroup">
-              <label htmlFor="dork-after">{t(locale, "afterDate")}</label>
-              <input
-                id="dork-after"
-                type="date"
-                value={fields.after}
-                onChange={e => updateField("after", e.target.value)}
-              />
-            </div>
-            <div className="App-formgroup">
-              <label htmlFor="dork-before">{t(locale, "beforeDate")}</label>
-              <input
-                id="dork-before"
-                type="date"
-                value={fields.before}
-                onChange={e => updateField("before", e.target.value)}
-              />
+        {!fields.when &&
+          <div className="App-formgroup">
+            <label htmlFor={`${uid}-after`}>{t(locale, "dateRange")}</label>
+            <div className="Feeds-dates">
+              <input id={`${uid}-after`} type="date" aria-label={t(locale, "afterDate")} value={fields.after} onChange={e => update({ after: e.target.value })} />
+              <span aria-hidden="true">{locale === "tr" ? "ile" : "to"}</span>
+              <input type="date" aria-label={t(locale, "beforeDate")} value={fields.before} onChange={e => update({ before: e.target.value })} />
             </div>
           </div>
-        )}
+        }
       </fieldset>
 
-      <div className="App-formgroup Feeds-query-preview">
-        <label htmlFor="dork-query">
-          {t(locale, "query")}
-          {manualOverride ? (
-            <button
-              type="button"
-              className="Feeds-inline-action"
-              onClick={() => {
-                setManualOverride(false);
-                setManualQuery("");
-              }}
-            >
-              {t(locale, "backToBuilder")}
-            </button>
-          ) : (
-            <span className="Feeds-input-hint">
-              ({t(locale, "generatedQuery")})
-            </span>
-          )}
-        </label>
-        <textarea
-          id="dork-query"
-          rows={2}
-          value={query}
-          onChange={e => {
-            setManualOverride(true);
-            setManualQuery(e.target.value);
-          }}
-        />
-        {previewUrl && (
-          <a
-            className="Feeds-preview-link"
-            href={previewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t(locale, "previewGoogle")} ↗
-          </a>
-        )}
-      </div>
-
       <div className="App-formgroup">
-        <label htmlFor={nameId}>{t(locale, "name")}</label>
+        <label htmlFor={`${uid}-query`}>{t(locale, "query")}</label>
+        <div className="Feeds-field">
+          <textarea
+            id={`${uid}-query`}
+            className="Feeds-input Feeds-query"
+            rows={2}
+            spellCheck={false}
+            placeholder={'"exact phrase" site:reuters.com -opinion when:7d'}
+            value={manualQuery ?? builtQuery}
+            onChange={e => setManualQuery(e.target.value)}
+          />
+          <span className="Feeds-help">
+            {manualQuery !== null ?
+              <>{t(locale, "editingManually")} <button type="button" className="btn-link" onClick={() => setManualQuery(null)}>{t(locale, "backToBuilder")}</button></> :
+              t(locale, "generatedQuery")}
+            {query && <>{' '}<a href={getGoogleNewsSearchUrl(query, edition)} target="_blank" rel="noopener noreferrer">{t(locale, "previewGoogle")}</a></>}
+          </span>
+        </div>
+      </div>
+      <div className="App-formgroup">
+        <label htmlFor={`${uid}-name`}>{t(locale, "name")}</label>
         <input
-          id={nameId}
-          type="text"
+          id={`${uid}-name`}
+          className="Feeds-input"
           placeholder={t(locale, "optionalQueryName")}
+          maxLength={40}
           value={name}
           onChange={e => setName(e.target.value)}
         />
       </div>
-
       <div className="App-formgroup">
-        <label htmlFor={colourId}>{t(locale, "colour")}</label>
-        <input
-          id={colourId}
-          type="color"
-          value={colour}
-          onChange={e => setColour(e.target.value)}
-        />
+        <label htmlFor={`${uid}-colour`}>{t(locale, "colour")}</label>
+        <input id={`${uid}-colour`} type="color" value={colour} onChange={e => setColour(e.target.value)} />
       </div>
-
-      {error && <p className="Feeds-error" role="alert">{error}</p>}
-
-      <div className="Feeds-form-actions">
-        <button type="submit" disabled={checking}>
-          {checking ? t(locale, "checkingSource") : t(locale, "addSearch")}
-        </button>
+      <div className="App-formgroup">
+        <span className="Feeds-spacer" />
+        <button type="submit" disabled={status.state === "loading"}>{t(locale, "addSearch")}</button>
       </div>
+      <Status {...status} locale={locale} />
     </form>
   );
 }

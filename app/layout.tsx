@@ -5,12 +5,13 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'ÖzelHaber - Yapay Zeka Destekli İnteraktif Haber Haritası',
   description:
-    'Google News ve popüler RSS beslemelerinden gerçek zamanlı haberleri haritalandıran, tek tıkla yapay zeka özeti sunan treemap haber platformu.',
-  manifest: '/manifest.json',
-  icons: { icon: '/icon.svg' },
+    'Google News ve popüler RSS beslemelerinden gerçek zamanlı haberleri haritalandıran, cihazda ücretsiz yapay zeka özeti sunan treemap haber platformu.',
+  generator: 'v0.app',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg', shortcut: '/favicon.ico' },
   openGraph: {
     title: 'ÖzelHaber - Yapay Zeka Destekli Haber Haritası',
-    description: 'Haberleri treemap mozaik harita ile takip edin, yapay zeka ile anında özetleyin.',
+    description: 'Haberleri treemap mozaik harita ile takip edin ve cihazınızda yapay zeka ile özetleyin.',
     type: 'website',
   },
 }

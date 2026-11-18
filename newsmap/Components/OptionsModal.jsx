@@ -9,15 +9,20 @@ import { translate as t } from '../i18n.js';
  * @param {"en"|"tr"} props.locale
  * @param {string[]} props.selectedEditions
  * @param {"tree"|"tree_mixed"|"grid"} props.mode
- * @param {"time"|"source_count"|"sources"|"position"} props.weightingMode
+ * @param {"time"|"sourceCount"|"source_count"|"sources"|"position"} props.weightingMode
  * @param {boolean} props.showGradient
+ * @param {boolean} props.sentimentHighlighting
+ * @param {boolean} props.clusterDuplicates
+ * @param {boolean} props.articleSummaryOnClick
+ * @param {"dark"|"light"|"oled"} props.theme
+ * @param {string} props.notificationKeywords
+ * @param {boolean} props.notificationsEnabled
+ * @param {() => void} props.onEnableNotifications
  * @param {boolean} props.headerTop
  * @param {number} props.itemsPerCategory
  * @param {boolean} props.newTab
  * @param {boolean} props.enableSourcesModal
  * @param {string} props.selectedPalette
- * @param {string} [props.theme]
- * @param {string} [props.geminiApiKey]
  * @param {() => void} props.onClose
  * @param {(ed: string[]) => void} props.onEditionChange
  * @param {(state: any) => void} props.setSavedState
@@ -30,13 +35,18 @@ export function OptionsModal({
   mode,
   weightingMode,
   showGradient,
+  sentimentHighlighting,
+  clusterDuplicates,
+  articleSummaryOnClick,
+  theme = "dark",
+  notificationKeywords = "",
+  notificationsEnabled = false,
+  onEnableNotifications = () => {},
   headerTop,
   itemsPerCategory,
   newTab,
   enableSourcesModal,
   selectedPalette,
-  theme = "dark",
-  geminiApiKey = "",
   onClose,
   onEditionChange,
   setSavedState,
@@ -66,9 +76,9 @@ export function OptionsModal({
           <div className="App-formgroup">
             <label htmlFor="sel-theme">{t(locale, "theme")}</label>
             <select id="sel-theme" value={theme} onChange={e => setSavedState({ theme: e.target.value })}>
-              <option value="dark">{t(locale, "themeDark")}</option>
-              <option value="oled">{t(locale, "themeOled")}</option>
-              <option value="light">{t(locale, "themeLight")}</option>
+              <option value="dark">{t(locale, "darkTheme")}</option>
+              <option value="oled">{t(locale, "oledTheme")}</option>
+              <option value="light">{t(locale, "lightTheme")}</option>
             </select>
           </div>
           <div className="App-formgroup">
@@ -132,6 +142,14 @@ export function OptionsModal({
             </div>
           </div>
           <div className="App-formgroup">
+            <label htmlFor="chk-sentiment">{t(locale, "sentimentHighlighting")}</label>
+            <input id="chk-sentiment" type="checkbox" checked={sentimentHighlighting} onChange={e => setSavedState({ sentimentHighlighting: e.target.checked })} />
+          </div>
+          <div className="App-formgroup">
+            <label htmlFor="chk-clustering">{t(locale, "clusterDuplicateArticles")}</label>
+            <input id="chk-clustering" type="checkbox" checked={clusterDuplicates} onChange={e => setSavedState({ clusterDuplicates: e.target.checked })} />
+          </div>
+          <div className="App-formgroup">
             <label htmlFor="num-per-cat">
               {t(locale, "itemsPerCategory")}
             </label>
@@ -141,34 +159,28 @@ export function OptionsModal({
             </div>
           </div>
           <div className="App-formgroup">
+            <label htmlFor="notification-keywords">{t(locale, "notificationKeywords")}</label>
+            <div>
+              <input id="notification-keywords" value={notificationKeywords} placeholder="AI, climate, seçim" onChange={e => setSavedState({ notificationKeywords: e.target.value })} />
+              <p style={{ fontStyle: "italic", fontSize: "0.8em" }}>{t(locale, "notificationHelp")}</p>
+              <button type="button" onClick={onEnableNotifications}>{notificationsEnabled ? t(locale, "notificationsEnabled") : t(locale, "enableNotifications")}</button>
+            </div>
+          </div>
+          <div className="App-formgroup">
             <label htmlFor="chk-new-tab">
               {t(locale, "openNewTab")}
             </label>
             <input id="chk-new-tab" type="checkbox" checked={newTab} onChange={e => setSavedState({ newTab: e.target.checked })} />
           </div>
           <div className="App-formgroup">
+            <label htmlFor="chk-summary-click">{t(locale, "articleSummaryOnClick")}</label>
+            <input id="chk-summary-click" type="checkbox" checked={articleSummaryOnClick} onChange={e => setSavedState({ articleSummaryOnClick: e.target.checked })} />
+          </div>
+          <div className="App-formgroup">
             <label htmlFor="chk-sources-modal">
               {t(locale, "showSourcesBeforeLink")}
             </label>
             <input id="chk-sources-modal" type="checkbox" checked={enableSourcesModal} onChange={e => setSavedState({ enableSourcesModal: e.target.checked })} />
-          </div>
-          <div className="App-formgroup" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid #333' }}>
-            <label htmlFor="txt-gemini-key">
-              {t(locale, "geminiApiKey")}
-            </label>
-            <div>
-              <input
-                id="txt-gemini-key"
-                type="password"
-                placeholder="AIzaSy..."
-                value={geminiApiKey}
-                onChange={e => setSavedState({ geminiApiKey: e.target.value })}
-                style={{ width: '100%' }}
-              />
-              <p style={{ fontStyle: "italic", fontSize: "0.75em", color: "#888", marginTop: '4px' }}>
-                {t(locale, "geminiApiKeyHint")}
-              </p>
-            </div>
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

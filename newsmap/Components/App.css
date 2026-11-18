@@ -301,90 +301,196 @@ button:active {
   margin-top: 0;
 }
 
-
-/* ==========================================================================
-   Modern Visual Themes & Enhancements
-   ========================================================================== */
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.App-header button,
+.App-category-key,
+.article {
+  touch-action: manipulation;
 }
 
-/* OLED Pure Black Theme */
-.App--theme-oled {
-  background-color: #000000 !important;
+html[data-theme='light'] body {
+  background: #f3f5f7;
+  color: #17191c;
 }
 
-.App--theme-oled .App-header {
-  background-color: #050505 !important;
-  border-top: 1px solid #1a1a1a;
-  border-bottom: 1px solid #1a1a1a;
+html[data-theme='light'] .App-header {
+  background: #e8ebef;
+  color: #17191c;
 }
 
-.App--theme-oled .App-modal {
-  background-color: #080808 !important;
-  border-color: #222222 !important;
+html[data-theme='light'] .App-title a,
+html[data-theme='light'] .App-Options,
+html[data-theme='light'] .btn-link {
+  color: #17191c;
 }
 
-/* Light Theme */
-.App--theme-light {
-  background-color: #f4f4f5 !important;
-  color: #18181b !important;
+html[data-theme='light'] .App-intro a,
+html[data-theme='light'] .ArticleSummary-link,
+html[data-theme='light'] .ArticleSummary-sources a {
+  color: #145e9a;
 }
 
-.App--theme-light .App-header {
-  background-color: #ffffff !important;
-  color: #18181b !important;
-  border-top: 1px solid #e4e4e7;
-  border-bottom: 1px solid #e4e4e7;
+html[data-theme='light'] .App-Edition:not(:empty) {
+  background: rgb(255 255 255 / 0.75);
 }
 
-.App--theme-light .App-title a {
-  color: #09090b !important;
+html[data-theme='light'] .App-category-chooser {
+  scrollbar-color: #aaa #ddd;
 }
 
-.App--theme-light .App-intro {
-  color: #52525b !important;
+html[data-theme='light'] .App-shade {
+  background: rgb(20 25 30 / 0.48);
 }
 
-.App--theme-light .App-intro a {
-  color: #2563eb !important;
+html[data-theme='light'] .App-modal {
+  background: #fff;
+  border-color: #d1d5db;
+  color: #17191c;
 }
 
-.App--theme-light button {
-  border-color: #d4d4d8;
-  color: #18181b;
+html[data-theme='light'] .App-modal button {
+  border-color: #555;
+  color: #17191c;
 }
 
-.App--theme-light button:hover {
-  background-color: #f4f4f5;
+html[data-theme='light'] .App-modal .Feeds-hint,
+html[data-theme='light'] .App-modal .Feeds-help,
+html[data-theme='light'] .ArticleSummary-description {
+  color: #4b5563;
 }
 
-/* Mobile & Touch Responsive Enhancements */
-@media (max-width: 767px) {
+html[data-theme='light'] .Feeds-input,
+html[data-theme='light'] .Feeds-dates input,
+html[data-theme='light'] .App-modal select,
+html[data-theme='light'] .App-modal input[type='number'] {
+  background: #fff;
+  color: #17191c;
+  border-color: #aeb4bc;
+}
+
+html[data-theme='light'] .Feeds-row {
+  background: #f1f3f5;
+}
+
+html[data-theme='light'] .Feeds-badge,
+html[data-theme='light'] .Feeds-row-detail {
+  color: #4b5563;
+}
+
+html[data-theme='oled'] body,
+html[data-theme='oled'] .App-header,
+html[data-theme='oled'] .App-Edition:not(:empty),
+html[data-theme='oled'] .App-modal {
+  background-color: #000;
+}
+
+html[data-theme='oled'] .App-shade {
+  background: rgb(0 0 0 / 0.88);
+}
+
+@media (max-width: 640px) {
+  .App-shade {
+    align-items: flex-end;
+  }
+
+  .App-modal,
+  .Feeds-modal.App-modal {
+    width: 100%;
+    max-width: 100%;
+    height: min(90dvh, 760px);
+    max-height: 90dvh;
+    top: auto;
+    bottom: 0;
+    margin: 0;
+    border-radius: 18px 18px 0 0;
+    border-bottom: 0;
+    padding: 18px 16px max(16px, env(safe-area-inset-bottom));
+    animation: sheet-enter 180ms ease-out;
+  }
+
+  .App-modal h1 {
+    font-size: 1.1em;
+  }
+
+  .App-modal button {
+    min-height: 40px;
+  }
+
   .App-header-config-topline {
+    display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 6px 8px;
+    align-items: center;
   }
 
   .App-header-controls {
-    overflow-x: auto;
-    width: 100%;
-    padding-bottom: 4px;
     display: flex;
-    gap: 6px;
-    scrollbar-width: none;
-  }
-
-  .App-header-controls::-webkit-scrollbar {
-    display: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
   }
 
   .App-header-controls button {
-    flex-shrink: 0;
-    font-size: 0.8rem;
+    min-height: 40px;
+    flex: 0 0 auto;
+  }
+
+  .App-category-key {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+
+  .App-EditionContainer {
+    min-height: 55dvh;
+  }
+
+  .App-header-bottom .App-EditionContainer {
+    height: calc(100% - 184px);
+  }
+
+  .App-header-bottom .App-header {
+    position: fixed;
+    z-index: 1;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 184px;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@keyframes sheet-enter {
+  from { transform: translateY(16px); opacity: 0.8; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.App--theme-oled {
+  background-color: #000;
+}
+
+.App--theme-oled .App-header,
+.App--theme-oled .App-modal {
+  background-color: #050505;
+  border-color: #222;
+}
+
+.App--theme-light {
+  background-color: #f3f5f7;
+  color: #17191c;
+}
+
+.App--theme-light .App-header {
+  background-color: #fff;
+  color: #17191c;
+}
+
+.App--theme-light .App-title a {
+  color: #17191c;
+}
+
+@media (max-width: 767px) {
+  .App-header-config-topline {
+    gap: 8px;
+    padding: 6px 8px;
   }
 
   .App-category-chooser {
@@ -395,18 +501,5 @@ button:active {
     height: 42px;
     padding: 4px 10px;
     font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-  }
-
-  /* Bottom sheet style on mobile */
-  .App-modal {
-    width: 100% !important;
-    max-width: 100% !important;
-    top: auto !important;
-    bottom: 0 !important;
-    border-radius: 16px 16px 0 0 !important;
-    max-height: 85vh !important;
-    margin: 0 !important;
   }
 }
