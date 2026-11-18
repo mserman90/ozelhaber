@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import Edition from './Edition.jsx';
+import Edition from './Edition.tsx';
 
 import { ucfirst, luminance } from '../util.js';
 import defaultColours, * as palettes from '../colours.js';
@@ -51,7 +51,7 @@ const defaultRefreshTime = 10 * 60 * 1000;
  * @prop {boolean} enableSourcesModal
  * @prop {boolean} wakeLock
  * @prop {import('../SearchContext.js').SearchContextValue} searchValue
- * @prop {import('./Edition.jsx').Article?} selectedArticle
+ * @prop {import('../types').Article?} selectedArticle
  * @prop {{ [id: string]: import('../customSources.js').CustomSource }} customSources
  * @prop {boolean} showFeeds
  * @prop {"en"|"tr"} locale
@@ -280,7 +280,7 @@ class App extends Component {
   }
 
   /**
-   * @param {import('./Edition.jsx').Article} article
+   * @param {import('../types').Article} article
    * @param {import('react').MouseEvent} e
    */
   handleArticleClick(article, e) {

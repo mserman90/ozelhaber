@@ -1,4 +1,6 @@
 import React, { useContext, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
+import type { Article as ArticleData, Category } from '../types';
 
 import defaultColours from '../colours';
 
@@ -9,18 +11,17 @@ import { isSearchMatching } from '../isSearchMatching';
 
 const DEBUG_FONT_SIZE = false;
 
-/**
- *
- * @param {object} props
- * @param {import('./Edition').Article} props.item
- * @param {boolean} props.showImage
- * @param {boolean} props.showGradient
- * @param {boolean} props.newTab
- * @param {{ [category: string]: string }} props.colours;
- * @param {{ top: number; left:number; width: number, height: number }} props.style
- * @param {() => void} props.onClick
- * @returns
- */
+type ArticleProps = {
+  item: ArticleData
+  category: Category | string
+  showImage: boolean
+  showGradient: boolean
+  newTab: boolean
+  colours?: Record<string, string>
+  style: CSSProperties
+  onClick: (event: MouseEvent<HTMLAnchorElement>) => void
+}
+
 export default function Article({
   item,
   showImage,
@@ -28,10 +29,10 @@ export default function Article({
   colours = defaultColours,
   style,
   onClick,
-  newTab
-}) {
-  const elementRef = useRef(/** @type {HTMLAnchorElement?} */(null));
-  const [fontSize, setFontSize] = useState(10);
+  newTab,
+}: ArticleProps) {
+  const elementRef = useRef<HTMLAnchorElement | null>(null);
+  const [fontSize, setFontSize] = useState<number>(10);
 
   const { title } = item;
   // The treemap can briefly produce non-finite dimensions while its container
@@ -94,12 +95,14 @@ export default function Article({
   const timeDelta = Date.now() - (new Date(item.publishedAt)).valueOf();
 
   if (showImage && item.imageURL) {
-    style.backgroundImage = `url(${item.imageURL})`;
+    safeStyle.backgroundImage = `url(${item.imageURL})`;
   }
 
-  let backgroundColor = getAgedColour(colours[item.category], timeDelta / (1000 * 60 * 60));
+  let backgroundColor = getAgedColour(colours[item.category] || '#333333', timeDelta / (1000 * 60 * 60));
 
-  const source = item.sources && item.sources.length && item.sources[0] || item;
+  const source = item.sources[0];
+  const sourceName = source?.name || '';
+  const sourceTitle = source?.title || item.title;
 
   const matchesSearch = isSearchMatching(searchValue, item);
 
@@ -131,8 +134,8 @@ export default function Article({
       <a
         href={item.url}
         className="article"
-        title={source.name ? `${source.name}: ${source.title}` : source.title}
-        data-source={source.name}
+        title={sourceName ? `${sourceName}: ${sourceTitle}` : sourceTitle}
+        data-source={sourceName}
         style={articleStyle}
         onClick={onClick}
         rel="noopener"
@@ -153,9 +156,9 @@ export default function Article({
  * @param {number} maxHeight
  * @returns
  */
-function calculateNewFontSize(currentWidth, currentHeight, maxWidth, maxHeight) {
+function calculateNewFontSize(currentWidth: number, currentHeight: number, maxWidth: number, maxHeight: number) {
 
-  return (/** @type {number} */ fontSize) => {
+  return (fontSize: number) => {
     const maxFontHeight = getMaxFontHeight(fontSize, maxWidth, maxHeight);
 
     const scale = maxFontHeight / currentHeight;
@@ -191,7 +194,7 @@ function calculateNewFontSize(currentWidth, currentHeight, maxWidth, maxHeight) 
  * @param {number} maxWidth
  * @param {number} maxHeight
  */
-function getMaxFontHeight(fontSize, maxWidth, maxHeight,) {
+function getMaxFontHeight(fontSize: number, maxWidth: number, maxHeight: number) {
   const padding = getPadding(maxWidth, maxHeight);
 
   const paddingHeight = maxHeight - padding * 2;
@@ -223,17 +226,17 @@ function getMaxFontHeight(fontSize, maxWidth, maxHeight,) {
  * @param {number} maxWidth
  * @param {number} maxHeight
  */
-function finiteNonNegative(value) {
-  return Number.isFinite(value) && value > 0 ? value : 0;
+function finiteNonNegative(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function getPadding(maxWidth, maxHeight) {
+function getPadding(maxWidth: number, maxHeight: number) {
   const width = finiteNonNegative(maxWidth);
   const height = finiteNonNegative(maxHeight);
   return Math.min(width * 0.03, height * 0.03);
 }
 
-function getAgedColour(base, age) {
+function getAgedColour(base: string, age: number) {
   const k1 = 50 / 9;
   const k2 = 20 / 3;
   const c = 1 - (k1 / k2);

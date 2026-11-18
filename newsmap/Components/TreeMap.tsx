@@ -1,10 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { layoutTreeMap } from '../layoutTreeMap'
+import type { Article, Category } from '../types'
 import './TreeMap.css'
-
-type Article = { id: string; weight: number }
-type Category = { key: string; weight: number; articles: Article[] }
 type RenderArticle = {
   key: string
   item: Article

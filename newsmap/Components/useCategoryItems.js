@@ -5,8 +5,8 @@ import { SearchContext } from '../SearchContext.js';
 import { isSearchMatching } from '../isSearchMatching.js';
 
 /**
- * @typedef {import('./Edition.jsx').Category} Category
- * @typedef {import('./Edition.jsx').Article} Article
+ * @typedef {import('../types').Category} Category
+ * @typedef {import('../types').Article} Article
  */
 
 /**
