@@ -3,17 +3,24 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'NewsMap.JS',
+  title: 'ÖzelHaber - Yapay Zeka Destekli İnteraktif Haber Haritası',
   description:
-    'A squarified treemap visualization of Google News based on the original newsmap.jp - now with your own RSS feeds and Google News keyword searches.',
+    'Google News ve popüler RSS beslemelerinden gerçek zamanlı haberleri haritalandıran, cihazda ücretsiz yapay zeka özeti sunan treemap haber platformu.',
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',
   icons: { icon: '/icon.svg', shortcut: '/favicon.ico' },
+  openGraph: {
+    title: 'ÖzelHaber - Yapay Zeka Destekli Haber Haritası',
+    description: 'Haberleri treemap mozaik harita ile takip edin ve cihazınızda yapay zeka ile özetleyin.',
+    type: 'website',
+  },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'dark',
-  themeColor: '#000000',
+  themeColor: '#121212',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -22,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="newsmap-html">
+    <html lang="tr" className="newsmap-html">
       <body>
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

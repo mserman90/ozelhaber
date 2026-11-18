@@ -10,6 +10,7 @@ import {
 import './FeedsModal.css';
 import { translate as t } from '../i18n.js';
 import { FeedDirectory } from './FeedDirectory.jsx';
+import presetFeeds from '../data/presetFeeds.json';
 
 /**
  * @typedef {import('../customSources.js').CustomSource} CustomSource
@@ -38,7 +39,7 @@ export function FeedsModal({
   onToggle,
   onClose,
 }) {
-  const [tab, setTab] = useState(/** @type {"rss"|"search"|"directory"} */("rss"));
+  const [tab, setTab] = useState(/** @type {"preset"|"rss"|"search"|"directory"} */("preset"));
   const sources = Object.values(customSources);
   const nextColour = pickColour(sources.length);
 
@@ -53,6 +54,16 @@ export function FeedsModal({
       >
         <h1 id="feeds-modal-title">{t(locale, "customSources")}</h1>
         <div className="Feeds-tabs" role="tablist" aria-label={t(locale, "sourceType")}>
+          <button
+            role="tab"
+            id="tab-preset"
+            aria-selected={tab === "preset"}
+            aria-controls="panel-preset"
+            className={tab === "preset" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
+            onClick={() => setTab("preset")}
+          >
+            {t(locale, "presetTab")}
+          </button>
           <button
             role="tab"
             id="tab-rss"
@@ -85,6 +96,8 @@ export function FeedsModal({
           </button>
         </div>
         <div className="App-modalbody">
+          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
+          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
           {tab === "rss" && <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />}
           {tab === "search" && <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />}
           {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
@@ -113,6 +126,79 @@ export function FeedsModal({
       </div>
     </div>
   );
+}
+
+/**
+ * @param {object} props
+ * @param {"en"|"tr"} props.locale
+ * @param {{ [id: string]: CustomSource }} props.customSources
+ * @param {(source: CustomSource) => void} props.onAdd
+ */
+function PresetCatalog({ locale, customSources, onAdd }) {
+  const [filter, setFilter] = useState('all')
+  const [addingUrl, setAddingUrl] = useState('')
+  const [error, setError] = useState('')
+  const existingUrls = new Set(Object.values(customSources).map(source => source.url).filter(Boolean))
+  const groups = [
+    { id: 'all', label: t(locale, 'presetAll') },
+    { id: 'general', label: t(locale, 'presetGeneral') },
+    { id: 'tech', label: t(locale, 'presetTech') },
+    { id: 'economy', label: t(locale, 'presetEconomy') },
+    { id: 'global', label: t(locale, 'presetGlobal') },
+  ]
+  const feeds = presetFeeds.filter(feed => filter === 'all' || feed.category === filter)
+
+  async function addPreset(preset) {
+    setAddingUrl(preset.url)
+    setError('')
+    try {
+      const feed = await getCustomFeed({ url: preset.url })
+      if (feed.articles.length === 0) throw new Error(t(locale, 'feedEmpty'))
+      onAdd({
+        id: createSourceId('rss'),
+        name: preset.name,
+        type: 'rss',
+        url: preset.url,
+        color: preset.color,
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t(locale, 'feedLoadError'))
+    } finally {
+      setAddingUrl('')
+    }
+  }
+
+  return (
+    <section className="Feeds-presets" id="panel-preset" role="tabpanel" aria-labelledby="tab-preset">
+      <p className="Feeds-hint">{t(locale, 'presetHint')}</p>
+      <div className="Feeds-tabs" aria-label={t(locale, 'directoryTitle')}>
+        {groups.map(group => (
+          <button key={group.id} type="button" className={filter === group.id ? 'Feeds-tab Feeds-tab--active' : 'Feeds-tab'} onClick={() => setFilter(group.id)}>
+            {group.label}
+          </button>
+        ))}
+      </div>
+      {error && <p className="Feeds-status Feeds-status--error" role="alert">{error}</p>}
+      <div className="Feeds-preset-grid">
+        {feeds.map(preset => {
+          const added = existingUrls.has(preset.url)
+          const loading = addingUrl === preset.url
+          return (
+            <article key={preset.id} className="Feeds-preset-card">
+              <span className="Feeds-swatch" style={{ backgroundColor: preset.color }} aria-hidden="true" />
+              <div className="Feeds-preset-description">
+                <strong>{preset.name}</strong>
+                <small>{preset.description}</small>
+              </div>
+              <button type="button" disabled={added || !!addingUrl} onClick={() => addPreset(preset)}>
+                {added ? t(locale, 'directoryAdded') : loading ? t(locale, 'checkingSource') : t(locale, 'addPreset')}
+              </button>
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
 }
 
 /**

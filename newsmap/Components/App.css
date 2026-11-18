@@ -462,3 +462,44 @@ html[data-theme='oled'] .App-shade {
   from { transform: translateY(16px); opacity: 0.8; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+.App--theme-oled {
+  background-color: #000;
+}
+
+.App--theme-oled .App-header,
+.App--theme-oled .App-modal {
+  background-color: #050505;
+  border-color: #222;
+}
+
+.App--theme-light {
+  background-color: #f3f5f7;
+  color: #17191c;
+}
+
+.App--theme-light .App-header {
+  background-color: #fff;
+  color: #17191c;
+}
+
+.App--theme-light .App-title a {
+  color: #17191c;
+}
+
+@media (max-width: 767px) {
+  .App-header-config-topline {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .App-category-chooser {
+    height: 42px;
+  }
+
+  .App-category-key {
+    height: 42px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+}

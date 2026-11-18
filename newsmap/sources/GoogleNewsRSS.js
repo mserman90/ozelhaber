@@ -300,17 +300,54 @@ export function parseFeed(doc, { googleSources, fallbackSource = "" }) {
  * @returns {Promise<Document>}
  */
 async function xmlFetch(url) {
-    // Clearing out Accept-Language stops Google's servers from redirecting to a different language
     const headers = new Headers({ "Accept-Language": "" });
-    const response = await fetch(url, { headers });
-    const text = await response.text();
+    let text = null;
 
-    if (!response.ok) {
-        let message = `Request failed (HTTP ${response.status})`;
+    try {
+        const response = await fetch(url, { headers });
+        if (response.ok) {
+            text = await response.text();
+        }
+    } catch (err) {
+        // Continue to fallback
+    }
+
+    // If local endpoint failed (e.g. running on static GitHub Pages), use public CORS proxies
+    if (!text) {
+        let upstream = url;
+        if (url.includes('/api/rss/')) {
+            const parts = url.split('/api/rss/')[1];
+            upstream = `https://news.google.com/rss/${parts}`;
+        } else if (url.includes('/api/feed?url=')) {
+            const rawUrl = url.split('/api/feed?url=')[1];
+            upstream = decodeURIComponent(rawUrl);
+        }
+
         try {
-            message = JSON.parse(text).error || message;
-        } catch (e) { /* not JSON */ }
-        throw Error(message);
+            const proxy1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(upstream)}`;
+            const res1 = await fetch(proxy1);
+            if (res1.ok) {
+                text = await res1.text();
+            }
+        } catch (e1) {
+            // Try secondary fallback
+        }
+
+        if (!text) {
+            try {
+                const proxy2 = `https://corsproxy.io/?url=${encodeURIComponent(upstream)}`;
+                const res2 = await fetch(proxy2);
+                if (res2.ok) {
+                    text = await res2.text();
+                }
+            } catch (e2) {
+                // Ignore
+            }
+        }
+    }
+
+    if (!text) {
+        throw Error("Besleme verisi yerel ve yedek proxy üzerinden alınamadı.");
     }
 
     const doc = (new DOMParser()).parseFromString(text, "text/xml");

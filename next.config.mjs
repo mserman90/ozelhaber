@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isGhPages = process.env.GITHUB_ACTIONS === 'true' || process.env.BUILD_TARGET === 'gh-pages'
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -6,19 +8,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
-    ]
-  },
+  ...(isGhPages
+    ? {
+        output: 'export',
+        basePath: '/ozelhaber',
+        trailingSlash: true,
+      }
+    : {}),
 }
 
 export default nextConfig
