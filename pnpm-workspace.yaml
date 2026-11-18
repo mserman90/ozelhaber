@@ -5,5 +5,5 @@ minimumReleaseAgeExclude:
   - next
 
 allowBuilds:
-  onnxruntime-node: set this to true or false
-  protobufjs: set this to true or false
+  onnxruntime-node: false
+  protobufjs: false
