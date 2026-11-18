@@ -55,6 +55,9 @@ const defaultRefreshTime = 10 * 60 * 1000;
  * @prop {{ [id: string]: import('../customSources.js').CustomSource }} customSources
  * @prop {boolean} showFeeds
  * @prop {"en"|"tr"} locale
+ * @prop {"dark"|"oled"|"light"} theme
+ * @prop {string} geminiApiKey
+ * @prop {string?} shareToast
  */
 
 /**
@@ -71,7 +74,7 @@ class App extends Component {
     const defaultState = {
       categories: [],
       selectedCategories: availableCategories,
-      selectedEditions: ["GB_en"],
+      selectedEditions: ["TR_tr"],
       mode: "tree",
       showImages: false,
       showGradient: true,
@@ -81,14 +84,17 @@ class App extends Component {
       headerTop: false,
       itemsPerCategory: 10,
       newTab: true,
-      enableSourcesModal: false,
+      enableSourcesModal: true,
       wakeLock: false,
       weightingMode: "time",
       searchValue: defaultSearchContextValue,
       selectedArticle: null,
       customSources: {},
       showFeeds: false,
-      locale: "en",
+      locale: "tr",
+      theme: "dark",
+      geminiApiKey: "",
+      shareToast: null,
     };
 
     /** @type {AppState} */
@@ -98,9 +104,6 @@ class App extends Component {
       ...getQueryState(),
     };
 
-    // Save selected Edition in case it has come from the query params
-    // Will cause "Can't call setState on a component that is not yet mounted"
-    // error.
     localStorage["state"] = JSON.stringify({ ...getSavedState(), selectedEditions: this.state.selectedEditions });
 
     this.onResize = this.onResize.bind(this);
@@ -109,6 +112,7 @@ class App extends Component {
     this.addCustomSource = this.addCustomSource.bind(this);
     this.removeCustomSource = this.removeCustomSource.bind(this);
     this.toggleCustomSource = this.toggleCustomSource.bind(this);
+    this.handleShare = this.handleShare.bind(this);
 
     /** @type {{ selected?: string[], sources?: object, result: string[] }} */
     this.activeCategoriesCache = { result: [] };
@@ -143,43 +147,37 @@ class App extends Component {
     return [...availableCategories, ...Object.keys(this.state.customSources)];
   }
 
-  /**
-   * Memoised so that Edition's data-loading effect only re-runs when the
-   * selection or the set of custom sources actually changes.
-   */
   getActiveCategories() {
     const { selectedCategories, customSources } = this.state;
-    const cache = this.activeCategoriesCache;
-    if (cache.selected !== selectedCategories || cache.sources !== customSources) {
-      this.activeCategoriesCache = {
-        selected: selectedCategories,
-        sources: customSources,
-        result: getActiveCategories(selectedCategories, availableCategories, customSources),
-      };
+    if (this.activeCategoriesCache.selected === selectedCategories && this.activeCategoriesCache.sources === customSources) {
+      return this.activeCategoriesCache.result;
     }
-    return this.activeCategoriesCache.result;
+    const result = getActiveCategories(selectedCategories, customSources);
+    this.activeCategoriesCache = { selected: selectedCategories, sources: customSources, result };
+    return result;
   }
 
   /**
    * @param {import('../customSources.js').CustomSource} source
    */
   addCustomSource(source) {
-    const { customSources, selectedCategories } = this.state;
-    this.setSavedState({
-      customSources: { ...customSources, [source.id]: source },
-      selectedCategories: [...selectedCategories, source.id],
-    });
+    const customSources = { ...this.state.customSources, [source.id]: source };
+    const selectedCategories = this.state.selectedCategories.includes(source.id)
+      ? this.state.selectedCategories
+      : [...this.state.selectedCategories, source.id];
+
+    this.setSavedState({ customSources, selectedCategories });
   }
 
   /**
    * @param {string} id
    */
   removeCustomSource(id) {
-    const { [id]: _removed, ...customSources } = this.state.customSources;
-    this.setSavedState({
-      customSources,
-      selectedCategories: this.state.selectedCategories.filter(c => c !== id),
-    });
+    const customSources = { ...this.state.customSources };
+    delete customSources[id];
+    const selectedCategories = this.state.selectedCategories.filter(c => c !== id);
+
+    this.setSavedState({ customSources, selectedCategories });
   }
 
   /**
@@ -212,23 +210,28 @@ class App extends Component {
 
   handleEditionChange(editions) {
     this.setSavedState({ selectedEditions: editions });
-
     this.setState({ categories: [] });
+  }
+
+  handleShare() {
+    const shareUrl = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        this.setState({ shareToast: t(this.state.locale, "shareSuccess") });
+        setTimeout(() => this.setState({ shareToast: null }), 3000);
+      });
+    }
   }
 
   setSavedState(newState) {
     localStorage["state"] = JSON.stringify({ ...getSavedState(), ...newState });
-
     this.setState(newState);
   }
 
   componentDidMount() {
     window.addEventListener("resize", this.onResize);
-
     document.addEventListener("visibilitychange", this.visibilityChangeCallback);
-
     document.addEventListener("keyup", this.keyupListener);
-
     window.addEventListener("popstate", this.historyListener);
 
     if (window['gtag']) {
@@ -242,34 +245,28 @@ class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.onResize);
-
     document.removeEventListener("visibilitychange", this.visibilityChangeCallback);
-
     document.removeEventListener("keyup", this.keyupListener);
-
     window.removeEventListener("popstate", this.historyListener);
-
     clearInterval(this.trackingTimeout);
   }
 
   getWakeLock() {
-    navigator.wakeLock.request("screen").then(sentinel => {
+    navigator.wakeLock?.request?.("screen").then(sentinel => {
       this.wakeLockRef = sentinel;
-    }, err => {
-      // Couldn't acquire wakeLock
+    }, () => {
       this.setState({ wakeLock: false });
     });
   }
 
   componentDidUpdate() {
-    document.documentElement.lang = this.state.locale || "en";
+    document.documentElement.lang = this.state.locale || "tr";
 
     if (this.state.wakeLock) {
       if (!this.wakeLockRef) {
         this.getWakeLock();
       }
-    }
-    else {
+    } else {
       if (this.wakeLockRef) {
         this.wakeLockRef.release();
         this.wakeLockRef = null;
@@ -284,7 +281,9 @@ class App extends Component {
    * @param {import('react').MouseEvent} e
    */
   handleArticleClick(article, e) {
-    if (this.state.enableSourcesModal) {
+    // If sources modal enabled OR small screen (mobile/tablet), open modal overview
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    if (this.state.enableSourcesModal || isMobile) {
       e.preventDefault();
       this.setState({ selectedArticle: article });
     }
@@ -300,45 +299,26 @@ class App extends Component {
   }
 
   updatePage(replace = false) {
-    // const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams();
+    searchParams.set("edition", this.state.selectedEditions.join(","));
+    if (this.state.searchValue.enabled && this.state.searchValue.text) {
+      searchParams.set("q", this.state.searchValue.text);
+    }
 
-    // searchParams.set("edition", this.state.selectedEditions.join(","));
-
-    const searchParams = "edition=" + this.state.selectedEditions.join(",");
-
-    // if (this.state.searchValue.enabled) {
-    //   searchParams.set("q", this.state.searchValue.text);
-    // }
-
-    // // If options are open, don't update URL as we type. Instead, retain the
-    // // current value
-    // if (this.state.showSearchOptions) {
-    //   const currentParams = new URLSearchParams(window.location.search);
-    //   const q = currentParams.get("q");
-    //   if (q) {
-    //     searchParams.set("q", q);
-    //   }
-    //   else {
-    //     searchParams.delete("q");
-    //   }
-    // }
-
-    const url = `?${searchParams}`;
+    const url = `?${searchParams.toString()}`;
 
     const historyState = {
       selectedEditions: this.state.selectedEditions,
-      // searchValue: this.state.searchValue,
     };
 
     if (window.location.search === url || replace) {
       history.replaceState(historyState, "", url);
-    }
-    else {
+    } else {
       history.pushState(historyState, "", url);
     }
 
     const titleParts = [
-      "NewsMap.JS",
+      "ÖzelHaber",
       editions.filter(ed => this.state.selectedEditions.includes(ed.value)).map(ed => ed.name).join(", "),
     ];
 
@@ -350,76 +330,96 @@ class App extends Component {
   }
 
   renderHeader(colours) {
-    const { selectedCategories, wakeLock, searchValue, customSources, locale } = this.state;
+    const { selectedCategories, wakeLock, searchValue, customSources, locale, shareToast } = this.state;
     const customCount = Object.keys(customSources).length;
 
     return (
       <header className="App-header">
         <div className="App-header-config">
           <div className="App-header-config-topline">
-            <h1 className="App-title" style={{ flex: 1 }}><a href="https://newsmap.ijmacd.com">NewsMap.JS</a></h1>
-            <div className="App-header-controls">
-              <button style={{ margin: 4 }} onClick={() => this.setState({ showOptions: true })}>{t(locale, "options")}</button>
-              <button style={{ margin: 4 }} onClick={() => this.ref && requestFullscreen(this.ref)}>{t(locale, "fullscreen")}</button>
-              <button style={{ margin: 4, outline: searchValue.enabled ? "2px solid red" : void 0 }} onClick={() => this.setState({ showSearchOptions: true })}>{searchValue.enabled ? t(locale, "searchActive") : t(locale, "search")}</button>
-              <button style={{ margin: 4 }} onClick={() => this.setState({ showFeeds: true })}>
+            <h1 className="App-title" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <a href="/" style={{ textDecoration: 'none', color: '#fff', fontWeight: 700 }}>
+                ÖzelHaber
+              </a>
+              <span style={{ fontSize: '0.65rem', background: '#3b82f6', color: '#fff', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                AI
+              </span>
+            </h1>
+
+            <div className="App-header-controls" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+              <button onClick={() => this.setState({ showOptions: true })}>{t(locale, "options")}</button>
+              <button onClick={() => this.ref && requestFullscreen(this.ref)}>{t(locale, "fullscreen")}</button>
+              <button style={{ outline: searchValue.enabled ? "2px solid #ef4444" : void 0 }} onClick={() => this.setState({ showSearchOptions: true })}>
+                {searchValue.enabled ? t(locale, "searchActive") : t(locale, "search")}
+              </button>
+              <button onClick={() => this.setState({ showFeeds: true })}>
                 {customCount > 0 ? `${t(locale, "sources")} (${customCount})` : t(locale, "sources")}
               </button>
+              <button onClick={this.handleShare} title={t(locale, "shareMap")}>
+                🔗 {t(locale, "shareMap")}
+              </button>
               <button
-                style={{ margin: 4 }}
                 lang={locale === "en" ? "tr" : "en"}
                 aria-label={`${t(locale, "language")}: ${locale === "en" ? "Türkçe" : "English"}`}
                 onClick={() => this.setSavedState({ locale: locale === "en" ? "tr" : "en" })}
+                style={{ fontWeight: 'bold' }}
               >
                 {locale === "en" ? "TR" : "EN"}
               </button>
             </div>
-            {
-              "wakeLock" in navigator &&
-              <label style={{ margin: 4 }}><input type="checkbox" checked={wakeLock} onChange={(e) => this.setState({ wakeLock: e.target.checked })} /> {t(locale, "keepScreenOn")}</label>
-            }
-          </div>
-          <p className="App-intro">
-            {t(locale, "intro")} <a href="https://news.google.com">Google News</a> {t(locale, "andYourSources")}{" "}
-            {t(locale, "inspiredBy")} <a href="http://newsmap.jp">newsmap.jp</a>.{" "}
-            {t(locale, "forkMe")} <a href="https://github.com/ijmacd/newsmap-js">GitHub</a>.
-          </p>
-        </div>
-        <div className="App-category-chooser">
-          {
-            this.getAllCategoryIds().map(cat => {
-              const custom = customSources[cat];
-              const active = selectedCategories.includes(cat);
-              const backgroundColor = active ? colours[cat] : "#777";
-              const color = active ? (luminance(backgroundColor) > 128 ? "#111" : "#FFF") : "#555";
 
-              return (
-                <label
-                  key={cat}
-                  className="App-category-key"
-                  style={{ backgroundColor, color }}
-                  title={custom ? (custom.type === "rss" ? `RSS: ${custom.url}` : `Google News: ${custom.query}`) : void 0}
-                >
-                  <input
-                    type="checkbox"
-                    checked={active}
-                    onChange={this.onCategoryChange}
-                    value={cat} />
-                  {custom ? custom.name : t(locale, `categories.${cat}`)}
-                </label>
-              )
-            })
-          }
+            {"wakeLock" in navigator && (
+              <label style={{ margin: 4, display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#a3a3a3' }}>
+                <input type="checkbox" checked={wakeLock} onChange={(e) => this.setState({ wakeLock: e.target.checked })} />
+                {t(locale, "keepScreenOn")}
+              </label>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+            <p className="App-intro" style={{ margin: '4px 0' }}>
+              {t(locale, "intro")} <a href="https://news.google.com" target="_blank" rel="noopener noreferrer">Google News</a> {t(locale, "andYourSources")}{" "}
+              {t(locale, "inspiredBy")} <a href="http://newsmap.jp" target="_blank" rel="noopener noreferrer">newsmap.jp</a>.
+            </p>
+            {shareToast && (
+              <span style={{ fontSize: '0.8rem', color: '#4ade80', background: 'rgba(34, 197, 94, 0.15)', padding: '2px 8px', borderRadius: '4px' }}>
+                ✓ {shareToast}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="App-category-chooser">
+          {this.getAllCategoryIds().map(cat => {
+            const custom = customSources[cat];
+            const active = selectedCategories.includes(cat);
+            const backgroundColor = active ? colours[cat] : "#555";
+            const color = active ? (luminance(backgroundColor) > 128 ? "#111" : "#FFF") : "#888";
+
+            return (
+              <label
+                key={cat}
+                className="App-category-key"
+                style={{ backgroundColor, color }}
+                title={custom ? (custom.type === "rss" ? `RSS: ${custom.url}` : `Google News: ${custom.query}`) : void 0}
+              >
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={this.onCategoryChange}
+                  value={cat}
+                />
+                {custom ? custom.name : t(locale, `categories.${cat}`)}
+              </label>
+            );
+          })}
         </div>
       </header>
     );
   }
 
   render() {
-    const {
-      refreshTime
-    } = this.props;
-
+    const { refreshTime } = this.props;
     const {
       selectedCategories,
       mode,
@@ -434,11 +434,13 @@ class App extends Component {
       enableSourcesModal,
       weightingMode,
       selectedArticle,
+      customSources,
+      showFeeds,
+      theme,
+      geminiApiKey,
     } = this.state;
 
     const showImages = false;
-
-    const { customSources, showFeeds } = this.state;
 
     const colours = { ...(palettes[selectedPalette] || defaultColours) };
     for (const source of Object.values(customSources)) {
@@ -446,11 +448,12 @@ class App extends Component {
     }
 
     const activeCategories = this.getActiveCategories();
-
     const showEditionName = selectedEditions.length > 1;
 
+    const themeClass = theme === "oled" ? "App--theme-oled" : theme === "light" ? "App--theme-light" : "App--theme-dark";
+
     return (
-      <div className={`App ${headerTop ? "App-header-top" : "App-header-bottom"}`}>
+      <div className={`App ${headerTop ? "App-header-top" : "App-header-bottom"} ${themeClass}`}>
         {headerTop && this.renderHeader(colours)}
         <SearchContext.Provider value={this.state.searchValue}>
           <div className="App-EditionContainer" ref={r => this.ref = r}>
@@ -460,7 +463,11 @@ class App extends Component {
                 style={{ height: showEditionName ? "calc(100% - 1rem)" : "100%", flex: 1 }}
                 className="App-Edition"
               >
-                {showEditionName && <p style={{ color: "white", margin: 0, fontWeight: "bold", height: "1rem", fontSize: "0.8rem" }}>{(findEdition(ed) || {}).name}</p>}
+                {showEditionName && (
+                  <p style={{ color: "white", margin: 0, fontWeight: "bold", height: "1rem", fontSize: "0.8rem" }}>
+                    {(findEdition(ed) || {}).name}
+                  </p>
+                )}
                 <Edition
                   edition={ed}
                   mode={mode}
@@ -476,20 +483,23 @@ class App extends Component {
                   onArticleClick={this.handleArticleClick.bind(this)}
                 />
               </div>
-            ))
-            }
-            {enableSourcesModal && selectedArticle &&
+            ))}
+
+            {selectedArticle && (
               <SourcesModal
                 locale={this.state.locale}
                 article={selectedArticle}
                 newTab={newTab}
+                geminiApiKey={geminiApiKey}
                 onClose={() => this.setState({ selectedArticle: null })}
               />
-            }
+            )}
           </div>
         </SearchContext.Provider>
+
         {!headerTop && this.renderHeader(colours)}
-        {showOptions &&
+
+        {showOptions && (
           <OptionsModal
             locale={this.state.locale}
             selectedEditions={this.state.selectedEditions}
@@ -501,21 +511,25 @@ class App extends Component {
             newTab={this.state.newTab}
             enableSourcesModal={this.state.enableSourcesModal}
             selectedPalette={this.state.palette}
+            theme={theme}
+            geminiApiKey={geminiApiKey}
             onClose={() => this.setState({ showOptions: false })}
             onEditionChange={this.handleEditionChange.bind(this)}
             setSavedState={this.setSavedState.bind(this)}
             donationLink={this.props.donationLink}
           />
-        }
-        {showSearchOptions &&
+        )}
+
+        {showSearchOptions && (
           <SearchOptionsModal
             locale={this.state.locale}
             searchValue={this.state.searchValue}
             setSearchValue={searchValue => this.setSavedState({ searchValue })}
             onClose={() => this.setState({ showSearchOptions: false })}
           />
-        }
-        {showFeeds &&
+        )}
+
+        {showFeeds && (
           <FeedsModal
             locale={this.state.locale}
             customSources={customSources}
@@ -527,7 +541,7 @@ class App extends Component {
             onToggle={this.toggleCustomSource}
             onClose={() => this.setState({ showFeeds: false })}
           />
-        }
+        )}
       </div>
     );
   }
@@ -536,7 +550,7 @@ class App extends Component {
 export default App;
 
 function getSavedState() {
-  return typeof localStorage["state"] !== "undefined" ? JSON.parse(localStorage["state"]) : {};
+  return typeof localStorage !== 'undefined' && typeof localStorage["state"] !== "undefined" ? JSON.parse(localStorage["state"]) : {};
 }
 
 function findEdition(id) {
@@ -549,21 +563,15 @@ function findEdition(id) {
 function requestFullscreen(el) {
   if (el.requestFullscreen) {
     el.requestFullscreen();
-    // @ts-ignore
-  } else if (el.mozRequestFullScreen) {
-    // @ts-ignore
-    el.mozRequestFullScreen();
-    // @ts-ignore
-  } else if (el.webkitRequestFullScreen) {
-    // @ts-ignore
-    el.webkitRequestFullScreen();
+  } else if (/** @type {any} */(el).webkitRequestFullScreen) {
+    /** @type {any} */(el).webkitRequestFullScreen();
   }
 }
 
 function getQueryState() {
+  if (typeof window === 'undefined') return {};
   const queryState = {};
-
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = new URLSearchParams(window.location.search);
 
   const edition = queryParams.get("edition");
   if (edition) {
@@ -573,13 +581,13 @@ function getQueryState() {
     }
   }
 
-  const searchValue = defaultSearchContextValue;
   const q = queryParams.get("q");
   if (q) {
-    searchValue.text = q;
-    searchValue.enabled = true;
-
-    queryState.searchValue = searchValue;
+    queryState.searchValue = {
+      ...defaultSearchContextValue,
+      text: q,
+      enabled: true,
+    };
   }
 
   return queryState;

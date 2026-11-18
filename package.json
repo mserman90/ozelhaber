@@ -1,6 +1,7 @@
 {
-  "name": "my-project",
-  "version": "0.1.0",
+  "name": "ozelhaber",
+  "version": "0.2.0",
+  "description": "Yapay zeka destekli interaktif haber haritası ve treemap görselleştiricisi",
   "private": true,
   "packageManager": "pnpm@12.3.4",
   "scripts": {

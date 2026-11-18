@@ -300,3 +300,113 @@ button:active {
 .SourcesModal-Source p {
   margin-top: 0;
 }
+
+
+/* ==========================================================================
+   Modern Visual Themes & Enhancements
+   ========================================================================== */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* OLED Pure Black Theme */
+.App--theme-oled {
+  background-color: #000000 !important;
+}
+
+.App--theme-oled .App-header {
+  background-color: #050505 !important;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.App--theme-oled .App-modal {
+  background-color: #080808 !important;
+  border-color: #222222 !important;
+}
+
+/* Light Theme */
+.App--theme-light {
+  background-color: #f4f4f5 !important;
+  color: #18181b !important;
+}
+
+.App--theme-light .App-header {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+  border-top: 1px solid #e4e4e7;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.App--theme-light .App-title a {
+  color: #09090b !important;
+}
+
+.App--theme-light .App-intro {
+  color: #52525b !important;
+}
+
+.App--theme-light .App-intro a {
+  color: #2563eb !important;
+}
+
+.App--theme-light button {
+  border-color: #d4d4d8;
+  color: #18181b;
+}
+
+.App--theme-light button:hover {
+  background-color: #f4f4f5;
+}
+
+/* Mobile & Touch Responsive Enhancements */
+@media (max-width: 767px) {
+  .App-header-config-topline {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .App-header-controls {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+    display: flex;
+    gap: 6px;
+    scrollbar-width: none;
+  }
+
+  .App-header-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .App-header-controls button {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+  }
+
+  .App-category-chooser {
+    height: 42px;
+  }
+
+  .App-category-key {
+    height: 42px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Bottom sheet style on mobile */
+  .App-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    top: auto !important;
+    bottom: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 85vh !important;
+    margin: 0 !important;
+  }
+}
