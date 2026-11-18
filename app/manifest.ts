@@ -3,8 +3,8 @@ import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'NewsMap.JS',
-    short_name: 'NewsMap',
+    name: 'ÖzelHaber',
+    short_name: 'ÖzelHaber',
     description: 'A live treemap of world news with your own RSS feeds and searches.',
     start_url: '/',
     scope: '/',

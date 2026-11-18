@@ -23,8 +23,6 @@ import { translate as t } from '../i18n.js';
  * @param {boolean} props.newTab
  * @param {boolean} props.enableSourcesModal
  * @param {string} props.selectedPalette
- * @param {string} [props.theme]
- * @param {string} [props.geminiApiKey]
  * @param {() => void} props.onClose
  * @param {(ed: string[]) => void} props.onEditionChange
  * @param {(state: any) => void} props.setSavedState
@@ -49,8 +47,6 @@ export function OptionsModal({
   newTab,
   enableSourcesModal,
   selectedPalette,
-  theme = "dark",
-  geminiApiKey = "",
   onClose,
   onEditionChange,
   setSavedState,
@@ -80,9 +76,9 @@ export function OptionsModal({
           <div className="App-formgroup">
             <label htmlFor="sel-theme">{t(locale, "theme")}</label>
             <select id="sel-theme" value={theme} onChange={e => setSavedState({ theme: e.target.value })}>
-              <option value="dark">{t(locale, "themeDark")}</option>
-              <option value="oled">{t(locale, "themeOled")}</option>
-              <option value="light">{t(locale, "themeLight")}</option>
+              <option value="dark">{t(locale, "darkTheme")}</option>
+              <option value="oled">{t(locale, "oledTheme")}</option>
+              <option value="light">{t(locale, "lightTheme")}</option>
             </select>
           </div>
           <div className="App-formgroup">
@@ -103,14 +99,6 @@ export function OptionsModal({
               {t(locale, "controlsTop")}
             </label>
             <input id="chk-top-header" type="checkbox" checked={headerTop} onChange={e => setSavedState({ headerTop: e.target.checked })} />
-          </div>
-          <div className="App-formgroup">
-            <label htmlFor="sel-theme">{t(locale, "theme")}</label>
-            <select id="sel-theme" value={theme} onChange={e => setSavedState({ theme: e.target.value })}>
-              <option value="dark">{t(locale, "darkTheme")}</option>
-              <option value="light">{t(locale, "lightTheme")}</option>
-              <option value="oled">{t(locale, "oledTheme")}</option>
-            </select>
           </div>
           <div className="App-formgroup">
             <label htmlFor="sel-layout-mode">
@@ -193,24 +181,6 @@ export function OptionsModal({
               {t(locale, "showSourcesBeforeLink")}
             </label>
             <input id="chk-sources-modal" type="checkbox" checked={enableSourcesModal} onChange={e => setSavedState({ enableSourcesModal: e.target.checked })} />
-          </div>
-          <div className="App-formgroup" style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid #333' }}>
-            <label htmlFor="txt-gemini-key">
-              {t(locale, "geminiApiKey")}
-            </label>
-            <div>
-              <input
-                id="txt-gemini-key"
-                type="password"
-                placeholder="AIzaSy..."
-                value={geminiApiKey}
-                onChange={e => setSavedState({ geminiApiKey: e.target.value })}
-                style={{ width: '100%' }}
-              />
-              <p style={{ fontStyle: "italic", fontSize: "0.75em", color: "#888", marginTop: '4px' }}>
-                {t(locale, "geminiApiKeyHint")}
-              </p>
-            </div>
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

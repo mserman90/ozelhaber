@@ -30,17 +30,17 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
   const imageUrl = `/api/og?${imageParams.toString()}`
 
   return {
-    title: `${title} | NewsMap.JS`,
+    title: `${title} | ÖzelHaber`,
     description,
     openGraph: {
-      title: `${title} | NewsMap.JS`,
+      title: `${title} | ÖzelHaber`,
       description,
       type: 'website',
       images: [{ url: imageUrl, width: 1200, height: 630, alt: `NewsMap.JS — ${title}` }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | NewsMap.JS`,
+      title: `${title} | ÖzelHaber`,
       description,
       images: [imageUrl],
     },

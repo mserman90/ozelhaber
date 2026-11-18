@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
-  const title = (url.searchParams.get('title') || 'NewsMap.JS').slice(0, 140)
+  const title = (url.searchParams.get('title') || 'ÖzelHaber').slice(0, 140)
   const edition = (url.searchParams.get('edition') || 'World news').slice(0, 80)
   const locale = url.searchParams.get('locale') === 'tr' ? 'tr' : 'en'
   let categories: string[] = []
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
               <div key={color} style={{ width: 16, height: 38 + (index % 3) * 9, background: color, borderRadius: 3 }} />
             ))}
           </div>
-          <span style={{ fontSize: 25, fontWeight: 700, letterSpacing: 1 }}>NEWSMAP.JS</span>
+          <span style={{ fontSize: 25, fontWeight: 700, letterSpacing: 1 }}>ÖZELHABER</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ fontSize: 22, color: '#aeb9c7' }}>{locale === 'tr' ? 'PAYLAŞILAN HABER HARİTASI' : 'SHARED NEWS MAP'}</div>

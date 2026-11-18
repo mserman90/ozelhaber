@@ -51,7 +51,7 @@ function createDefaultState(): AppState {
   return {
     categories: [],
     selectedCategories: [...availableCategories],
-    selectedEditions: ['GB_en'],
+    selectedEditions: ['TR_tr'],
     mode: 'tree',
     showImages: false,
     showGradient: true,
@@ -71,7 +71,7 @@ function createDefaultState(): AppState {
     selectedArticle: null,
     customSources: {},
     showFeeds: false,
-    locale: 'en',
+    locale: 'tr',
     theme: 'dark',
     notificationKeywords: '',
     notificationsEnabled: false,
@@ -168,7 +168,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
       .filter(edition => state.selectedEditions.includes(edition.value))
       .map(edition => edition.name)
       .join(', ')
-    document.title = ['NewsMap.JS', editionNames, state.searchValue.enabled ? state.searchValue.text : '']
+    document.title = ['ÖzelHaber', editionNames, state.searchValue.enabled ? state.searchValue.text : '']
       .filter(Boolean)
       .join(' - ')
   }, [state.selectedEditions, state.selectedCategories, state.mode, state.weightingMode, state.locale, state.theme, state.searchValue, state.customSources])
@@ -334,7 +334,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
       <header className="App-header">
         <div className="App-header-config">
           <div className="App-header-config-topline">
-            <h1 className="App-title" style={{ flex: 1 }}><a href="https://newsmap.ijmacd.com">NewsMap.JS</a></h1>
+            <h1 className="App-title" style={{ flex: 1 }}><a href="/">ÖzelHaber</a></h1>
             <div className="App-header-controls">
               <button style={{ margin: 4 }} onClick={() => updateState({ showOptions: true })}>{t(locale, 'options')}</button>
               <button style={{ margin: 4 }} onClick={() => containerRef.current && requestFullscreen(containerRef.current)}>{t(locale, 'fullscreen')}</button>
@@ -388,7 +388,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
   const showImages = false
 
   return (
-    <div className={`App ${state.headerTop ? 'App-header-top' : 'App-header-bottom'}`}>
+    <div className={`App ${state.headerTop ? 'App-header-top' : 'App-header-bottom'} App--theme-${state.theme}`}>
       {state.headerTop && renderHeader()}
       <SearchContext.Provider value={state.searchValue}>
         <div className="App-EditionContainer" ref={containerRef}>

@@ -54,8 +54,19 @@ export function ArticleSummaryModal({ article, locale, newTab, onClose }) {
       const result = await model(prompt, { max_new_tokens: hasDescription ? 100 : 42, do_sample: false })
       const generated = Array.isArray(result) ? result[0] : result
       setSummary(generated?.summary_text || generated?.generated_text || t(locale, 'summaryError'))
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t(locale, 'localAiError'))
+    } catch {
+      try {
+        const response = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ title: article.title, source: article.sources?.[0]?.name, locale }),
+        })
+        const fallback = await response.json()
+        if (!response.ok || !Array.isArray(fallback.summary)) throw new Error(t(locale, 'localAiError'))
+        setSummary(fallback.summary.join('\n'))
+      } catch {
+        setError(t(locale, 'localAiError'))
+      }
     } finally {
       setLoading(false)
       setDownloadProgress(null)
