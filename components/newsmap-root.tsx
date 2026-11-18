@@ -1,7 +1,7 @@
 'use client'
 
 import ErrorHandler from '@/newsmap/Components/ErrorHandler.jsx'
-import App from '@/newsmap/Components/App.jsx'
+import App from '@/newsmap/Components/App'
 import { getEnv } from '@/newsmap/env.js'
 
 export default function NewsMapRoot() {

@@ -1,6 +1,7 @@
 import React, { useContext, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import type { Article as ArticleData, Category } from '../types';
+import { analyzeSentiment } from '../sentiment';
 
 import defaultColours from '../colours';
 
@@ -16,6 +17,7 @@ type ArticleProps = {
   category: Category | string
   showImage: boolean
   showGradient: boolean
+  sentimentHighlighting: boolean
   newTab: boolean
   colours?: Record<string, string>
   style: CSSProperties
@@ -26,6 +28,7 @@ export default function Article({
   item,
   showImage,
   showGradient,
+  sentimentHighlighting,
   colours = defaultColours,
   style,
   onClick,
@@ -117,6 +120,9 @@ export default function Article({
     padding,
     outline,
   };
+  const sentimentColor = sentimentHighlighting
+    ? { positive: '#61d095', negative: '#ff786e', neutral: 'transparent' }[analyzeSentiment(item)]
+    : 'transparent';
 
   const maxFontHeight = getMaxFontHeight(fontSize, width, height);
 
@@ -124,13 +130,14 @@ export default function Article({
   const paddingHeight = rectHeight - padding * 2;
 
   return (
-    <li className={"Article-li " + (showImage && item.imageURL ? "Article-image" : "") + (showGradient ? "Article--shadow" : "")} style={{ ...safeStyle, backgroundColor, color: luminance(backgroundColor) > 176 ? "#111" : "#FFF" }}>
+    <li className={"Article-li " + (showImage && item.imageURL ? "Article-image" : "") + (showGradient ? "Article--shadow" : "")} style={{ ...safeStyle, backgroundColor, color: luminance(backgroundColor) > 176 ? "#111" : "#FFF", boxShadow: sentimentColor === 'transparent' ? undefined : `inset 0 0 0 3px ${sentimentColor}` }}>
       {
         DEBUG_FONT_SIZE && <>
           <div style={{ position: "absolute", width: "100%", top: padding, height: maxFontHeight, borderBottom: "1px solid blue" }} />
           <div style={{ position: "absolute", width: "100%", bottom: padding, height: fontSize * 1.1, borderTop: "1px solid grey", borderBottom: "1px solid grey", fontSize: 4 }}>{(paddingHeight / (fontSize * 1.1)).toFixed()}</div>
         </>
       }
+      {item.clusterCount ? <span className="Article-cluster-badge" aria-label={`${item.clusterCount} similar stories clustered`} title={`${item.clusterCount} similar stories clustered`}>+{item.clusterCount}</span> : null}
       <a
         href={item.url}
         className="article"

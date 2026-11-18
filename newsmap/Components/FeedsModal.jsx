@@ -9,6 +9,7 @@ import {
 } from '../customSources.js';
 import './FeedsModal.css';
 import { translate as t } from '../i18n.js';
+import { FeedDirectory } from './FeedDirectory.jsx';
 
 /**
  * @typedef {import('../customSources.js').CustomSource} CustomSource
@@ -37,7 +38,7 @@ export function FeedsModal({
   onToggle,
   onClose,
 }) {
-  const [tab, setTab] = useState(/** @type {"rss"|"search"} */("rss"));
+  const [tab, setTab] = useState(/** @type {"rss"|"search"|"directory"} */("rss"));
   const sources = Object.values(customSources);
   const nextColour = pickColour(sources.length);
 
@@ -64,6 +65,16 @@ export function FeedsModal({
           </button>
           <button
             role="tab"
+            id="tab-directory"
+            aria-selected={tab === "directory"}
+            aria-controls="panel-directory"
+            className={tab === "directory" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
+            onClick={() => setTab("directory")}
+          >
+            {t(locale, "directoryTab")}
+          </button>
+          <button
+            role="tab"
             id="tab-search"
             aria-selected={tab === "search"}
             aria-controls="panel-search"
@@ -74,10 +85,9 @@ export function FeedsModal({
           </button>
         </div>
         <div className="App-modalbody">
-          {tab === "rss" ?
-            <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} /> :
-            <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />
-          }
+          {tab === "rss" && <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />}
+          {tab === "search" && <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />}
+          {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
 
           <h2 className="Feeds-heading">{t(locale, "yourSources")} ({sources.length})</h2>
           {sources.length === 0 ?

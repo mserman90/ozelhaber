@@ -17,6 +17,8 @@ type EditionProps = {
   colours: Record<string, string>
   showImages: boolean
   showGradient: boolean
+  sentimentHighlighting: boolean
+  clusterDuplicates: boolean
   itemsPerCategory: number
   refreshTime: number
   newTab: boolean
@@ -38,6 +40,8 @@ export default function Edition({
   weightingMode,
   showImages,
   showGradient,
+  sentimentHighlighting,
+  clusterDuplicates,
   colours,
   itemsPerCategory,
   newTab,
@@ -52,6 +56,7 @@ export default function Edition({
     itemsPerCategory,
     weightingMode,
     customSources,
+    clusterDuplicates,
   ) as Category[]
 
   useFastVisualRefresh(weightingMode === 'time', 60 * 1000)
@@ -65,6 +70,7 @@ export default function Edition({
       style={style}
       showImage={showImages}
       showGradient={showGradient}
+      sentimentHighlighting={sentimentHighlighting}
       colours={colours}
       newTab={newTab}
       onClick={event => onArticleClick(item, event)}

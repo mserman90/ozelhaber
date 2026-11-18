@@ -189,6 +189,16 @@ function getItemImage(itemEl) {
 }
 
 /**
+ * @param {Element} itemEl
+ */
+function extractDescription(itemEl) {
+    const raw = firstText(itemEl, ["content:encoded", "description", "summary", "content"]);
+    if (!raw) return "";
+    const parsed = (new DOMParser()).parseFromString(raw, "text/html");
+    return (parsed.body.textContent || "").replace(/\s+/g, " ").trim().slice(0, 5000);
+}
+
+/**
  * Parses RSS 2.0, RSS 1.0 (RDF) and Atom documents into NewsMap articles.
  *
  * @param {Document} doc
@@ -225,6 +235,7 @@ export function parseFeed(doc, { googleSources, fallbackSource = "" }) {
                 title = title.substring(0, title.length - sourceTail.length);
             }
 
+            const description = googleSources ? "" : extractDescription(itemEl);
             const rawDate = firstText(itemEl, ["pubDate", "published", "updated", "dc:date"]);
             const parsedDate = rawDate ? new Date(rawDate) : null;
             const publishedAt = parsedDate && !isNaN(+parsedDate) ? parsedDate.toISOString() : fetchedAt;
@@ -268,6 +279,7 @@ export function parseFeed(doc, { googleSources, fallbackSource = "" }) {
             return {
                 id,
                 title,
+                description,
                 url,
                 publishedAt,
                 sources,

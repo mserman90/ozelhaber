@@ -9,11 +9,13 @@ export type Article = {
   id: string
   category: string
   title: string
+  description?: string
   url: string
   publishedAt: string
   imageURL: string
   sources: FeedSource[]
   weight: number
+  clusterCount?: number
 }
 
 export type Category = {
@@ -46,4 +48,4 @@ export type SearchFilter = {
 }
 
 export type MapMode = 'tree' | 'grid' | 'tree_mixed'
-export type WeightingMode = 'time' | 'sourceCount' | 'sources' | 'position'
+export type WeightingMode = 'time' | 'sourceCount' | 'source_count' | 'sources' | 'position'

@@ -16,3 +16,13 @@ body {
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
+
+html[data-theme='light'] body {
+  background-color: #f3f5f7;
+  background-image: none;
+}
+
+html[data-theme='oled'] body {
+  background-color: #000;
+  background-image: none;
+}

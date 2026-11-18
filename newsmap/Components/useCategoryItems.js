@@ -3,6 +3,7 @@ import { getCustomFeed, getNews, searchNews } from '../sources/GoogleNewsRSS.js'
 import { ucfirst } from '../util.js';
 import { SearchContext } from '../SearchContext.js';
 import { isSearchMatching } from '../isSearchMatching.js';
+import { headlinesMatch } from './headlineSimilarity.js';
 
 /**
  * @typedef {import('../types').Category} Category
@@ -14,10 +15,11 @@ import { isSearchMatching } from '../isSearchMatching.js';
  * @param {number} refreshTime
  * @param {string} edition
  * @param {number} itemsPerCategory
- * @param {"time"|"sourceCount"|"sources"|"position"} weightMode
+ * @param {"time"|"sourceCount"|"source_count"|"sources"|"position"} weightMode
  * @param {{ [id: string]: import('../customSources.js').CustomSource }} customSources
+ * @param {boolean} clusterDuplicates
  */
-export function useCategoryItems(categories, refreshTime, edition, itemsPerCategory, weightMode = "time", customSources = {}) {
+export function useCategoryItems(categories, refreshTime, edition, itemsPerCategory, weightMode = "time", customSources = {}, clusterDuplicates = false) {
 
     const [categoryData, setCategoryData] = useState(/** @type {{ [id: string]: Category }} */({}));
     const loaderRef = useRef(/** @type {((cancellable: { current: boolean; }) => void)?} */(null));
@@ -183,6 +185,28 @@ export function useCategoryItems(categories, refreshTime, edition, itemsPerCateg
     }
 
     items.sort((a, b) => b.weight - a.weight);
+
+    if (clusterDuplicates) {
+        const representatives = [];
+        for (const category of items) {
+            category.articles = category.articles.filter(article => {
+                const duplicate = representatives.find(candidate => headlinesMatch(candidate.title, article.title));
+                if (!duplicate) {
+                    representatives.push(article);
+                    return true;
+                }
+
+                const knownUrls = new Set(duplicate.sources.map(source => source.url));
+                duplicate.sources = [
+                    ...duplicate.sources,
+                    ...article.sources.filter(source => !knownUrls.has(source.url)),
+                ];
+                duplicate.clusterCount = (duplicate.clusterCount || 0) + 1;
+                return false;
+            });
+            category.weight = category.articles.reduce((total, article) => total + article.weight, 0);
+        }
+    }
 
     return items;
 }
