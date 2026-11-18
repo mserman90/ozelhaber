@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import GridMap from './GridMap.jsx';
-import TreeMap from './TreeMap.jsx';
-import TreeMapMixed from './TreeMapMixed.jsx';
+import TreeMap from './TreeMap.tsx';
+import TreeMapMixed from './TreeMapMixed.tsx';
 import Article from './Article.jsx';
 
 import { useCategoryItems } from './useCategoryItems.js';
