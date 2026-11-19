@@ -1,8 +1,10 @@
 const { app, BrowserWindow, Menu, Tray, dialog, shell, nativeImage, powerSaveBlocker, ipcMain, net } = require('electron')
 const path = require('node:path')
 
-const APP_URL = process.env.OZELHABER_URL || 'https://mserman90.github.io/ozelhaber/'
-const APP_ORIGIN = new URL(APP_URL).origin
+const GITHUB_PAGES_URL = 'https://mserman90.github.io/ozelhaber/'
+const VERCEL_URL = 'https://haber-vert.vercel.app/'
+let currentAppUrl = process.env.OZELHABER_URL || GITHUB_PAGES_URL
+
 const args = process.argv.slice(1).map((arg) => arg.toLowerCase())
 const screensaverMode = args.some(a => a === '/s' || a.startsWith('/s')) || args.includes('--screensaver')
 const configMode = args.some(a => a === '/c' || a.startsWith('/c')) || args.includes('--config')
@@ -47,6 +49,60 @@ function closeScreensaver(window) {
   }
 }
 
+// GitHub Releases Update Checker
+async function checkGitHubUpdates(manual = false) {
+  try {
+    const response = await net.fetch('https://api.github.com/repos/mserman90/ozelhaber/releases/latest', {
+      headers: { 'User-Agent': `OzelHaber-Desktop-App/${app.getVersion()}` },
+    })
+    if (!response.ok) {
+      if (manual && mainWindow && !mainWindow.isDestroyed()) {
+        dialog.showMessageBox(mainWindow, {
+          type: 'info',
+          title: 'Güncelleme',
+          message: 'GitHub sürüm bilgisi alınamadı.',
+        })
+      }
+      return
+    }
+    const release = await response.json()
+    const latestTag = (release.tag_name || '').trim()
+    const currentVersion = 'v' + app.getVersion()
+
+    if (latestTag && latestTag !== currentVersion) {
+      const { response: choice } = await dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'Yeni Güncelleme Mevcut',
+        message: `ÖzelHaber ${latestTag} sürümü yayınlandı! (Mevcut: ${currentVersion})`,
+        detail: `${release.name || ''}\n\nİndirmek için indirme bağlantısını açmak ister misiniz?`,
+        buttons: ['İndir / Güncelle', 'Daha Sonra'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      if (choice === 0) {
+        const setupAsset = (release.assets || []).find(a => a.name.endsWith('.exe'))
+        shell.openExternal(setupAsset ? setupAsset.browser_download_url : release.html_url)
+      }
+    } else if (manual && mainWindow && !mainWindow.isDestroyed()) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'Güncellemeler',
+        message: 'Uygulamanız güncel!',
+        detail: `En son ÖzelHaber masaüstü sürümünü (${currentVersion}) kullanıyorsunuz.`,
+      })
+    }
+  } catch (error) {
+    if (manual && mainWindow && !mainWindow.isDestroyed()) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'error',
+        title: 'Hata',
+        message: 'Güncellemeler denetlenirken bir sorun oluştu.',
+        detail: error.message || 'Bağlantı hatası',
+      })
+    }
+  }
+}
+
 // IPC Handlers
 ipcMain.on('screensaver-exit', () => {
   closeScreensaver(mainWindow)
@@ -60,7 +116,7 @@ ipcMain.handle('fetch-feed', async (_event, feedUrl) => {
     }
     const response = await net.fetch(feedUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ÖzelHaber/0.2.0',
+        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ÖzelHaber/${app.getVersion()}`,
         'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
       },
     })
@@ -113,6 +169,9 @@ function createWindow(isScreensaver = screensaverMode) {
     },
   })
 
+  // Ensure fresh content on launch
+  mainWindow.webContents.session.clearCache().catch(() => {})
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https://') || url.startsWith('http://')) {
       shell.openExternal(url)
@@ -122,7 +181,8 @@ function createWindow(isScreensaver = screensaverMode) {
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
     try {
-      if (new URL(url).origin !== APP_ORIGIN) {
+      const allowedOrigins = [new URL(GITHUB_PAGES_URL).origin, new URL(VERCEL_URL).origin]
+      if (!allowedOrigins.includes(new URL(url).origin)) {
         event.preventDefault()
         if (url.startsWith('https://') || url.startsWith('http://')) shell.openExternal(url)
       }
@@ -138,20 +198,38 @@ function createWindow(isScreensaver = screensaverMode) {
         title: 'ÖzelHaber bağlantısı yok',
         message: 'Haber panosu yüklenemedi.',
         detail: `İnternet bağlantınızı kontrol edip yeniden deneyin. (${description}, ${code})\n${validatedURL}`,
-        buttons: ['Yeniden Dene', 'Kapat'],
+        buttons: ['Yeniden Dene', 'Yedek Yayına Geç (Vercel)', 'Kapat'],
         defaultId: 0,
-        cancelId: 1,
-      }).then(({ response }) => response === 0 ? mainWindow?.loadURL(APP_URL) : app.quit())
+        cancelId: 2,
+      }).then(({ response }) => {
+        if (response === 0) {
+          mainWindow?.loadURL(currentAppUrl)
+        } else if (response === 1) {
+          currentAppUrl = currentAppUrl === GITHUB_PAGES_URL ? VERCEL_URL : GITHUB_PAGES_URL
+          mainWindow?.loadURL(currentAppUrl)
+          updateTrayMenu()
+        } else {
+          app.quit()
+        }
+      })
+    }
+  })
+
+  // Keyboard shortcut handlers (F5 / Ctrl+R to reload ignoring cache)
+  mainWindow.webContents.on('before-input-event', (_event, input) => {
+    if (isScreensaver) {
+      if (input.type === 'keyDown') closeScreensaver(mainWindow)
+    } else {
+      if (input.type === 'keyDown') {
+        if (input.key === 'F5' || (input.control && input.key.toLowerCase() === 'r')) {
+          mainWindow.webContents.reloadIgnoringCache()
+        }
+      }
     }
   })
 
   if (isScreensaver) {
     mainWindow.on('ready-to-show', () => mainWindow?.show())
-    mainWindow.webContents.on('before-input-event', (_event, input) => {
-      if (input.type === 'keyDown') {
-        closeScreensaver(mainWindow)
-      }
-    })
   } else {
     mainWindow.on('ready-to-show', () => mainWindow?.show())
     mainWindow.on('closed', () => { mainWindow = null })
@@ -163,7 +241,9 @@ function createWindow(isScreensaver = screensaverMode) {
     })
   }
 
-  mainWindow.loadURL(APP_URL)
+  mainWindow.loadURL(currentAppUrl, {
+    extraHeaders: 'pragma: no-cache\ncache-control: no-cache\n',
+  })
 }
 
 function updateTrayMenu() {
@@ -172,8 +252,36 @@ function updateTrayMenu() {
 
   const contextMenu = Menu.buildFromTemplate([
     { label: 'ÖzelHaber’i Aç', click: showDesktop },
+    {
+      label: 'Haber Panosunu Yenile (F5)',
+      click: () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.reloadIgnoringCache()
+        }
+      },
+    },
+    { type: 'separator' },
     { label: 'Ekran koruyucuyu başlat', click: () => { createWindow(true) } },
     { label: 'Windows Ekran Koruyucu Ayarları...', click: () => { shell.openPath('rundll32.exe desk.cpl,InstallScreenSaver') } },
+    { type: 'separator' },
+    {
+      label: 'Yayın Kaynağı: GitHub Pages',
+      type: 'radio',
+      checked: currentAppUrl === GITHUB_PAGES_URL,
+      click: () => {
+        currentAppUrl = GITHUB_PAGES_URL
+        mainWindow?.loadURL(currentAppUrl)
+      },
+    },
+    {
+      label: 'Yayın Kaynağı: Vercel (Yedek)',
+      type: 'radio',
+      checked: currentAppUrl === VERCEL_URL,
+      click: () => {
+        currentAppUrl = VERCEL_URL
+        mainWindow?.loadURL(currentAppUrl)
+      },
+    },
     { type: 'separator' },
     {
       label: 'Windows ile Birlikte Başlat',
@@ -183,6 +291,7 @@ function updateTrayMenu() {
         app.setLoginItemSettings({ openAtLogin: item.checked, openAsHidden: true })
       },
     },
+    { label: 'Güncellemeleri Denetle...', click: () => checkGitHubUpdates(true) },
     { type: 'separator' },
     { label: 'Çıkış', click: () => { quitting = true; app.quit() } },
   ])
@@ -210,7 +319,11 @@ if (configMode) {
       createWindow(true)
     } else {
       createWindow(false)
-      if (!previewMode) makeTray()
+      if (!previewMode) {
+        makeTray()
+        // Check for updates silently on startup
+        setTimeout(() => checkGitHubUpdates(false), 5000)
+      }
     }
   })
 }

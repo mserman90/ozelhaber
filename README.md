@@ -70,7 +70,7 @@ pnpm desktop:screensaver
 pnpm package:win
 ```
 
-Derlenen kurulum dosyası `release/OzelHaber-Setup-0.2.0.exe` dizininde üretilir.
+Derlenen kurulum dosyası `release/OzelHaber-Setup-0.2.1.exe` dizininde üretilir.
 
 ---
 

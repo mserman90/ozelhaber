@@ -56,7 +56,7 @@ pnpm desktop:screensaver
 pnpm package:win
 ```
 
-Oluşan `release/OzelHaber-Setup-0.2.0.exe` dosyası çalıştırıldığında uygulamayı ve ekran koruyucuyu otomatik olarak kurar.
+Oluşan `release/OzelHaber-Setup-0.2.1.exe` dosyası çalıştırıldığında uygulamayı ve ekran koruyucuyu otomatik olarak kurar.
 
 ---
 
