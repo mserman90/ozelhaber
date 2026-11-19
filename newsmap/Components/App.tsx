@@ -134,6 +134,38 @@ export default function App({ refreshTime, donationLink }: AppProps) {
   }, [state.palette, state.customSources])
 
   const initialUrlState = useRef(true)
+
+  // Desktop & power-user hotkeys (Esc to close, / for search, O for options, S for sources)
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase()
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+        if (event.key === 'Escape') {
+          (document.activeElement as HTMLElement)?.blur()
+        }
+        return
+      }
+
+      if (event.key === 'Escape') {
+        updateState({
+          showOptions: false,
+          showSearchOptions: false,
+          showFeeds: false,
+          selectedArticle: null,
+        })
+      } else if (event.key === '/') {
+        event.preventDefault()
+        updateState({ showSearchOptions: true })
+      } else if (event.key === 'o' || event.key === 'O') {
+        updateState({ showOptions: true })
+      } else if (event.key === 's' || event.key === 'S') {
+        updateState({ showFeeds: true })
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [updateState])
   const updatePage = useCallback((replace = false) => {
     const searchParams = new URLSearchParams()
     searchParams.set('edition', state.selectedEditions.join(','))
@@ -332,7 +364,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
       <header className="App-header">
         <div className="App-header-config">
           <div className="App-header-config-topline">
-            <h1 className="App-title" style={{ flex: 1 }}><a href="/">ÖzelHaber</a></h1>
+            <h1 className="App-title" style={{ flex: 1 }}><a href="./">ÖzelHaber</a></h1>
             <div className="App-header-controls">
               <button style={{ margin: 4 }} onClick={() => updateState({ showOptions: true })}>{t(locale, 'options')}</button>
               <button style={{ margin: 4 }} onClick={() => containerRef.current && requestFullscreen(containerRef.current)}>{t(locale, 'fullscreen')}</button>

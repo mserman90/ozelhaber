@@ -97,12 +97,76 @@ export function FeedsModal({
         </div>
         <div className="App-modalbody">
           {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
-          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
           {tab === "rss" && <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />}
           {tab === "search" && <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />}
           {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
 
-          <h2 className="Feeds-heading">{t(locale, "yourSources")} ({sources.length})</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+            <h2 className="Feeds-heading" style={{ margin: 0 }}>{t(locale, "yourSources")} ({sources.length})</h2>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <label className="btn-link" style={{ cursor: 'pointer', fontSize: '0.85em', padding: '3px 8px', border: '1px solid #555', borderRadius: 4 }}>
+                📥 {t(locale, "importOpml")}
+                <input
+                  type="file"
+                  accept=".opml,.xml"
+                  style={{ display: 'none' }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const text = String(event.target?.result || '');
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/xml');
+                        const outlines = doc.querySelectorAll('outline[xmlUrl], outline[xmlurl]');
+                        let count = 0;
+                        outlines.forEach((node, idx) => {
+                          const url = node.getAttribute('xmlUrl') || node.getAttribute('xmlurl');
+                          const title = node.getAttribute('title') || node.getAttribute('text') || `Feed ${idx + 1}`;
+                          if (url) {
+                            onAdd({
+                              id: createSourceId(),
+                              type: 'rss',
+                              url,
+                              name: title,
+                              colour: pickColour(sources.length + count),
+                            });
+                            count++;
+                          }
+                        });
+                        alert(count > 0 ? t(locale, 'opmlImportSuccess') : t(locale, 'opmlImportError'));
+                      } catch {
+                        alert(t(locale, 'opmlImportError'));
+                      }
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              {sources.some(s => s.type === 'rss') && (
+                <button
+                  type="button"
+                  style={{ fontSize: '0.85em', padding: '3px 8px', border: '1px solid #555', borderRadius: 4, background: 'transparent', color: '#ccc', cursor: 'pointer' }}
+                  onClick={() => {
+                    const rssSources = sources.filter(s => s.type === 'rss' && s.url);
+                    const escape = (str = '') => str.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '\'': '&apos;', '"': '&quot;' })[c]);
+                    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head>\n    <title>ÖzelHaber RSS</title>\n    <dateCreated>${new Date().toUTCString()}</dateCreated>\n  </head>\n  <body>\n    <outline text="Haber Kaynakları" title="Haber Kaynakları">\n${rssSources.map(s => `      <outline type="rss" text="${escape(s.name)}" title="${escape(s.name)}" xmlUrl="${escape(s.url)}" htmlUrl="${escape(s.url)}" />`).join('\n')}\n    </outline>\n  </body>\n</opml>`;
+                    const blob = new Blob([xml], { type: 'text/xml' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = 'ozelhaber-feeds.opml';
+                    a.click();
+                    URL.revokeObjectURL(blobUrl);
+                  }}
+                >
+                  📤 {t(locale, "exportOpml")}
+                </button>
+              )}
+            </div>
+          </div>
           {sources.length === 0 ?
             <p className="Feeds-hint">{t(locale, "noCustomSources")}</p> :
             <ul className="Feeds-list">

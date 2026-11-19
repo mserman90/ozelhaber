@@ -122,6 +122,22 @@ export async function getCustomFeed(options) {
  * Unified feed fetcher for Node.js / Vercel (local /api) and Static GitHub Pages.
  */
 async function fetchFeedUnified({ localUrl, upstreamUrl, googleSources, fallbackSource = "" }) {
+    // 0. If running inside Electron Desktop / Screensaver, use native IPC fetch (Zero CORS, zero proxy lag)
+    if (typeof window !== 'undefined' && window.electronAPI && typeof window.electronAPI.fetchFeed === 'function' && upstreamUrl) {
+        try {
+            const res = await window.electronAPI.fetchFeed(upstreamUrl);
+            if (res && res.ok && res.data) {
+                const doc = (new DOMParser()).parseFromString(res.data, "text/xml");
+                if (doc.getElementsByTagName("parsererror").length === 0) {
+                    const parsed = parseFeed(doc, { googleSources, fallbackSource });
+                    if (parsed.articles && parsed.articles.length > 0) return parsed;
+                }
+            }
+        } catch (e) {
+            console.warn("[Feed] Electron native IPC fetch failed, falling back to web proxies...", e);
+        }
+    }
+
     const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
 
     // 1. Try local server API first if running locally or on server

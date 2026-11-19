@@ -24,6 +24,22 @@
   color: lightblue;
 }
 
+.ArticleSummary-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #eee;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ArticleSummary-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 .ArticleSummary-result,
 .ArticleSummary-sources {
   margin-top: 16px;

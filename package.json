@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:gh-pages": "node -e \"const fs=require('fs'); if(fs.existsSync('app/api')) fs.renameSync('app/api', '_api_backup')\" && next build && node -e \"const fs=require('fs'); if(fs.existsSync('_api_backup')) fs.renameSync('_api_backup', 'app/api')\"",
+    "build:gh-pages": "node -e \"const fs=require('fs'); try { if(fs.existsSync('app/api')) fs.renameSync('app/api', '_api_backup'); const { execSync } = require('child_process'); execSync('next build', { stdio: 'inherit', env: { ...process.env, BUILD_TARGET: 'gh-pages' } }); } finally { if(fs.existsSync('_api_backup')) fs.renameSync('_api_backup', 'app/api'); }\"",
     "start": "next start",
     "desktop": "electron .",
     "desktop:screensaver": "electron . -- --screensaver",
@@ -44,6 +44,7 @@
     "asar": true,
     "files": [
       "main.cjs",
+      "preload.cjs",
       "package.json",
       "assets/**/*",
       "!node_modules/**"

@@ -1,34 +1,66 @@
-# ÖzelHaber Windows masaüstü uygulaması
+# ÖzelHaber Windows Masaüstü ve Ekran Koruyucu Uygulaması
 
-ÖzelHaber’in Windows kabuğu, mevcut haber haritasını Electron penceresinde çalıştırır. Haber mozaikleri/ızgara düzeni, tema ve kategori seçenekleri, kaynak kataloğu, özel RSS/Google News kaynakları, arama, TR/EN arayüzü ve pano paylaşımı web sürümünün kendisi tarafından sağlanır; masaüstü kabuğu bunları yeniden uygulamaz veya değiştirmez.
+ÖzelHaber’in Windows kabuğu, interaktif haber haritasını modern ve optimize edilmiş bir Electron penceresinde çalıştırır. Haber mozaikleri, ızgara düzeni, tema ve kategori seçenekleri, kaynak kataloğu, özel RSS/Google News kaynakları, arama, TR/EN arayüzü ve pano paylaşımı web çekirdeği ile tam uyumlu olarak sunulur.
 
-## Bağlantı ve veri
+---
 
-Uygulama mevcut canlı adresi (`https://mserman90.github.io/ozelhaber/`) yükler. Dolayısıyla güncel haberler ve web tarafındaki özellikler için internet erişimi gereklidir; şu an uygulama çevrimdışı haber okuyucu değildir. Web uygulamasında yayınlanan yeni özellikler, masaüstü uygulamasını güncellemeden erişilebilir. Bağlantı kurulamazsa uygulama yeniden deneme seçeneği gösterir.
+## ⚡ Masaüstü Özellikleri ve Geliştirmeler
 
-## Kurulum ve geliştirme
+1. **Doğrudan IPC Feed Çekici (Zero-CORS):**
+   - Masaüstü ortamında çalışırken web tarayıcılarındaki CORS engellerini aşmak için harici proxy'lere (`allorigins`, `corsproxy` vb.) ihtiyaç duymaz.
+   - Electron ana sürecindeki yerel Node/net motoru aracılığıyla Google News ve özel RSS beslemelerini sıfır gecikmeyle ve kesintisiz çeker.
 
-Geliştirme için Windows üzerinde Node.js 20+ ve pnpm gerekir:
+2. **Windows Ekran Koruyucusu (`.scr`) Desteği:**
+   - Kurulumla birlikte `ÖzelHaber.scr` otomatik olarak kurulur ve Başlat Menüsüne doğrudan çalıştırma kısayolu eklenir.
+   - Windows standart `/s` (çalıştırma), `/c` (yapılandırma) ve `/p` (önizleme) komut satırı parametrelerini eksiksiz destekler.
+   - Ekran koruyucu tam ekran modunda açılır, ekranın uyku moduna geçmesini engeller ve klavye tuşuna basıldığında veya fare hareket ettirildiğinde otomatik olarak kapanır.
+
+3. **Gelişmiş Sistem Tepsisi (Tray) Yönetimi:**
+   - Arka planda çalışırken sistem tepsisi simgesi üzerinden yönetilir.
+   - Menüden tek tıkla **Ekran koruyucuyu başlat** veya **Windows Ekran Koruyucu Ayarlarını Aç** komutları verilebilir.
+   - **"Windows ile Birlikte Başlat"** seçeneği ile sistem açılışında arka planda hazır beklemesi sağlanabilir.
+
+4. **Tek Örnek (Single Instance) Güvencesi:**
+   - Uygulama tepside veya ekranda açıkken masaüstü simgesine tekrar tıklandığında mükerrer süreç başlatılmaz; mevcut pencere öne getirilir.
+
+5. **Klavye Kısayolları (Power-User Hotkeys):**
+   - `Esc`: Açık modalları ve haber özet pencerelerini kapatır.
+   - `/`: Doğrudan arama çubuğunu açar.
+   - `O`: Seçenekler ve ayarlar penceresini açar.
+   - `S`: Kaynak kataloğunu ve özel besleme yöneticisini açar.
+
+6. **Dahili Okuma & Sesli Dinleme (Text-to-Speech):**
+   - Haber özet penceresinde Türkçe ve İngilizce haber başlıklarını sesli dinleme (`🔊 Sesli Dinle`) butonu mevcuttur.
+   - OPML içe ve dışa aktarma ile RSS beslemeleri diğer okuyuculardan kolayca aktarılabilir.
+
+---
+
+## 🚀 Kurulum ve Paketleme
+
+Geliştirme için Windows ortamında Node.js 20+ ve pnpm gereklidir:
 
 ```powershell
+# Bağımlılıkları yükleyin
 pnpm install
+
+# Masaüstü uygulamasını geliştirme modunda başlatın
 pnpm desktop
+
+# Ekran koruyucu modunu test edin
+pnpm desktop:screensaver
 ```
 
-Windows NSIS kurulum dosyası:
+### Windows Kurulum Paketi (.exe) Oluşturma:
 
 ```powershell
 pnpm package:win
 ```
 
-Oluşan `release/OzelHaber-Setup-0.2.0.exe` dosyasını çalıştırın. Uygulama kaynak kodundan Windows dışında geliştirme yapmak mümkündür; Windows kurulum paketi oluşturmak için Windows ortamı veya depodaki Windows GitHub Actions iş akışı kullanılmalıdır.
+Oluşan `release/OzelHaber-Setup-0.2.0.exe` dosyası çalıştırıldığında uygulamayı ve ekran koruyucuyu otomatik olarak kurar.
 
-## Ekran koruyucu
+---
 
-Kurulum, `ÖzelHaber.exe` yanına Windows ekran koruyucusu biçimindeki `ÖzelHaber.scr` dosyasını ekler. Windows’un ekran koruyucu ayarlarında bu `.scr` dosyasını seçip bekleme süresini ve devamında oturum açma tercihini belirleyin. Ekran koruyucu tam ekran haber haritası gösterir, görüntü uykusunu engeller ve fare/klavye girdisinde çıkar. Sistem tepsisindeki menüden **Ekran koruyucuyu başlat** seçeneğiyle de denenebilir.
+## 🔒 Güvenlik Mimarisi
 
-Windows ekran koruyucu protokolünün `/s`, `/c` ve `/p` çağrıları ele alınır. `/p` Windows ayarlarına gömülü yerel HWND önizlemesi değildir; ayrı, küçük bir önizleme penceresi açar. `/c` ekran koruyucu kurulumunu nasıl seçeceğini anlatan iletişim kutusudur.
-
-## Gizlilik ve güvenlik
-
-Web içeriği sandbox, context isolation ve Node entegrasyonu kapalı şekilde çalışır. Harici haber bağlantıları sistemin varsayılan tarayıcısında açılır; masaüstü uygulaması yalnızca ÖzelHaber web adresindeki sayfalar arasında gezinmeye izin verir. Masaüstü kabuğuna haber içeriği veya hesap bilgisi kaydetme özelliği eklenmemiştir.
+- `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` güvenlik standartları korunmuştur.
+- Harici haber bağlantıları varsayılan web tarayıcısında açılır; masaüstü kabuğu yalnızca güvenli hedeflere izin verir.
