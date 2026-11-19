@@ -1,0 +1,44 @@
+﻿{
+    "edition":  "US_en",
+    "title":  "ENTERTAİNMENT",
+    "category":  "entertainment",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_ent_1",
+                         "sources":  [
+                                         {
+                                             "title":  "Altın Lale Ödülleri Açıklandı: Bağımsız Sinema Zaferi",
+                                             "url":  "https://www.ntv.com.tr",
+                                             "name":  "NTV Sanat",
+                                             "id":  "ntv"
+                                         },
+                                         {
+                                             "title":  "Festivalde Yönetmen ve Oyuncular Ayakta Alkışlandı",
+                                             "url":  "https://www.cumhuriyet.com.tr",
+                                             "name":  "Cumhuriyet Kültür",
+                                             "id":  "cumhuriyet"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:01:57.8395284Z",
+                         "title":  "İstanbul Uluslararası Film Festivali Ödülleri Görkemli Törenle Sahiplerini Buldu",
+                         "url":  "https://film.iksv.org"
+                     },
+                     {
+                         "id":  "tr_ent_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Tiyatro Sezonunda Klasikler ve Çağdaş Metinler Bir Arada",
+                                             "url":  "https://www.haberturk.com",
+                                             "name":  "Habertürk Kültür",
+                                             "id":  "haberturk"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:26:57.8395284Z",
+                         "title":  "Devlet Tiyatroları ve Şehir Tiyatrolarında Yeni Sezonun Kapalı Gişe Oyunları",
+                         "url":  "https://www.devtiyatro.gov.tr"
+                     }
+                 ]
+}

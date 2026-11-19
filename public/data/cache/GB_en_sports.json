@@ -1,0 +1,56 @@
+﻿{
+    "edition":  "GB_en",
+    "title":  "SPORTS",
+    "category":  "sports",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_spo_1",
+                         "sources":  [
+                                         {
+                                             "title":  "Liderlik Koltuğu İçin Nefes Kesen Mücadele",
+                                             "url":  "https://www.trtspor.com.tr",
+                                             "name":  "TRT Spor",
+                                             "id":  "trtspor"
+                                         },
+                                         {
+                                             "title":  "Derbi Taktikleri ve Muhtemel 11\u0027ler Netleşti",
+                                             "url":  "https://www.fanatik.com.tr",
+                                             "name":  "Fanatik",
+                                             "id":  "fanatik"
+                                         },
+                                         {
+                                             "title":  "Teknik Direktörlerden İddialı Açıklamalar",
+                                             "url":  "https://www.ntvspor.net",
+                                             "name":  "NTV Spor",
+                                             "id":  "ntvspor"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:13:57.8395284Z",
+                         "title":  "Süper Lig\u0027de Heyecan Dorukta: Zirve Mücadelesinde Kritik Haftanın Ayrıntıları",
+                         "url":  "https://www.tff.org"
+                     },
+                     {
+                         "id":  "tr_spo_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Filenin Sultanları Altın Madalya Parolasıyla Kampta",
+                                             "url":  "https://www.aa.com.tr",
+                                             "name":  "Anadolu Ajansı Spor",
+                                             "id":  "aa"
+                                         },
+                                         {
+                                             "title":  "Milli Takımda Moraller Yüksek",
+                                             "url":  "https://www.fotomac.com.tr",
+                                             "name":  "Fotomaç",
+                                             "id":  "fotomac"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:43:57.8395284Z",
+                         "title":  "A Milli Kadın Voleybol Takımı Milletler Ligi Finalleri Hazırlıklarına Başladı",
+                         "url":  "https://www.tvf.org.tr"
+                     }
+                 ]
+}

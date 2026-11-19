@@ -178,7 +178,7 @@ export function useCategoryItems(categories, refreshTime, edition, itemsPerCateg
      * @type {{ [type: string]: (article: Article, index: number) => number }}
      */
     const weightingFns = {
-        "time": a => 1 / (now - +new Date(a.publishedAt)),
+        "time": a => 1 / Math.max(1000, (now - +new Date(a.publishedAt)) || 1000),
         "sourceCount": a => a.sources.length,
         "sources": (a, i) => a.sources.length / (i + 1),
         "position": (_, i) => 1 / (i + 1),

@@ -1,0 +1,71 @@
+﻿{
+    "edition":  "GB_en",
+    "title":  "TECHNOLOGY",
+    "category":  "technology",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_tech_1",
+                         "sources":  [
+                                         {
+                                             "title":  "Yerli Çip Üretiminde Kritik Eşik Aşıldı",
+                                             "url":  "https://webrazzi.com",
+                                             "name":  "Webrazzi",
+                                             "id":  "webrazzi"
+                                         },
+                                         {
+                                             "title":  "Milli Çip Projesinde Sevindiren Gelişme",
+                                             "url":  "https://www.donanimhaber.com",
+                                             "name":  "DonanımHaber",
+                                             "id":  "donanimhaber"
+                                         },
+                                         {
+                                             "title":  "Savunma ve Otomotiv Sektörlerine Destek",
+                                             "url":  "https://shiftdelete.net",
+                                             "name":  "ShiftDelete.Net",
+                                             "id":  "shiftdelete"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:16:57.8395284Z",
+                         "title":  "Türkiye\u0027nin Yerli Yarı İletken ve Mikroçip Tasarım Merkezinde İlk Prototip Üretildi",
+                         "url":  "https://www.tubitak.gov.tr"
+                     },
+                     {
+                         "id":  "tr_tech_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Türk Araştırmacılardan Küresel Standartta Açık LLM",
+                                             "url":  "https://www.webtekno.com",
+                                             "name":  "Webtekno",
+                                             "id":  "webtekno"
+                                         },
+                                         {
+                                             "title":  "Türkçe Doğal Dil İşleme Performansında Büyük Sıçrama",
+                                             "url":  "https://www.chip.com.tr",
+                                             "name":  "Chip Online",
+                                             "id":  "chip"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:51:57.8395284Z",
+                         "title":  "Açık Kaynak Kodlu Türkçe Büyük Dil Modellerinde Yeni Versiyon Yayınlandı",
+                         "url":  "https://github.com"
+                     },
+                     {
+                         "id":  "tr_tech_3",
+                         "sources":  [
+                                         {
+                                             "title":  "Kuantum Bilgisayarlar Klasik Sistemleri Geride Bırakıyor",
+                                             "url":  "https://bilimteknik.tubitak.gov.tr",
+                                             "name":  "Bilim ve Teknik",
+                                             "id":  "bilimteknik"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:16:57.8395284Z",
+                         "title":  "Kuantum Hesaplama Alanında Süperiletken Kübit Sayısı Yeni Bir Rekor Kırdı",
+                         "url":  "https://bilimteknik.tubitak.gov.tr"
+                     }
+                 ]
+}

@@ -19,8 +19,35 @@ const editionUrlCache = new Map();
  * @param {string} options.edition
  */
 export async function getNews(options) {
+    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/ozelhaber') ? '/ozelhaber' : '';
+    const normCategory = (options.category || '').toLowerCase();
+
+    // 1. First, check pre-rendered static snapshot (zero CORS, zero rate-limit, instant render)
+    try {
+        const candidateKeys = [normCategory];
+        if (normCategory === 'nation') candidateKeys.push('national');
+        if (normCategory === 'national') candidateKeys.push('nation');
+
+        for (const catKey of candidateKeys) {
+            const cacheUrl = `${basePath}/data/cache/${options.edition}_${catKey}.json`;
+            const res = await fetch(cacheUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.articles) && data.articles.length > 0) {
+                    return {
+                        title: data.title || ucfirst(options.category),
+                        category: options.category,
+                        articles: data.articles,
+                    };
+                }
+            }
+        }
+    } catch (e) {
+        console.warn(`[Snapshot Cache] Fallback for ${options.edition}_${options.category}:`, e);
+    }
+
     const urls = await getEditionUrls(options.edition);
-    const path = urls[options.category.toLowerCase()];
+    const path = urls[normCategory] || (normCategory === 'national' ? urls['nation'] : null);
 
     if (!path) {
         throw Error("Can't find URL for edition/category");
@@ -107,7 +134,27 @@ async function fetchFeedUnified({ localUrl, upstreamUrl, googleSources, fallback
         }
     }
 
-    // 2. Try rss2json (CORS enabled, highly reliable for Google News and custom feeds)
+    // 2. Try allorigins.win JSON proxy (safe CORS wrapper, handles XML content cleanly)
+    if (upstreamUrl) {
+        try {
+            const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(upstreamUrl)}`;
+            const res = await fetch(allOriginsUrl);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.contents) {
+                    const doc = (new DOMParser()).parseFromString(json.contents, "text/xml");
+                    if (doc.getElementsByTagName("parsererror").length === 0) {
+                        const parsed = parseFeed(doc, { googleSources, fallbackSource });
+                        if (parsed.articles && parsed.articles.length > 0) return parsed;
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn("[Feed] allorigins get failed:", err);
+        }
+    }
+
+    // 3. Try rss2json (CORS enabled, highly reliable for Google News and custom feeds)
     if (upstreamUrl) {
         try {
             const rss2JsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(upstreamUrl)}`;
@@ -123,12 +170,12 @@ async function fetchFeedUnified({ localUrl, upstreamUrl, googleSources, fallback
         }
     }
 
-    // 3. Fallback to public CORS proxy XML fetch
+    // 4. Fallback to public CORS proxy XML fetch
     if (upstreamUrl) {
         const proxies = [
             `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(upstreamUrl)}`,
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(upstreamUrl)}`,
-            `https://corsproxy.io/?url=${encodeURIComponent(upstreamUrl)}`
+            `https://corsproxy.io/?url=${encodeURIComponent(upstreamUrl)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(upstreamUrl)}`
         ];
 
         for (const proxy of proxies) {

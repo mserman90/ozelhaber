@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Snapshot Real-time Feeds for Zero-CORS Static Serving
+        run: node scripts/fetch-news-snapshot.mjs || true
+
       - name: Build Next.js Static Export for GitHub Pages
         run: pnpm run build:gh-pages
         env:

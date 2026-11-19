@@ -1,0 +1,44 @@
+﻿{
+    "edition":  "US_en",
+    "title":  "HEALTH",
+    "category":  "health",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_hea_1",
+                         "sources":  [
+                                         {
+                                             "title":  "Erken Evre Kanser Taramasında %98 Doğruluk",
+                                             "url":  "https://www.medimagazin.com.tr",
+                                             "name":  "Medimagazin",
+                                             "id":  "medimagazin"
+                                         },
+                                         {
+                                             "title":  "Yapay Zeka Radyologların En Güçlü Yardımcısı Oldu",
+                                             "url":  "https://www.ntv.com.tr",
+                                             "name":  "NTV Sağlık",
+                                             "id":  "ntvsaglik"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:03:57.8395284Z",
+                         "title":  "Yapay Zeka Destekli Erken Tanı Algoritmaları Onkolojide Klinik Kullanıma Girdi",
+                         "url":  "https://www.medimagazin.com.tr"
+                     },
+                     {
+                         "id":  "tr_hea_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Haftada En Az 150 Dakika Tempolu Yürüyüş Önerisi",
+                                             "url":  "https://www.haberturk.com",
+                                             "name":  "Habertürk Sağlık",
+                                             "id":  "haberturk"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:19:57.8395284Z",
+                         "title":  "Kardiyoloji Uzmanları Açıkladı: Akdeniz Tipi Beslenme ve Kalp Sağlığı İlişkisi",
+                         "url":  "https://www.saglik.gov.tr"
+                     }
+                 ]
+}
