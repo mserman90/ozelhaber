@@ -149,7 +149,7 @@ export default function Article({
         target={newTab ? "_blank" : "_self"}
         ref={elementRef}
       >
-        {source.title}
+        {sourceTitle}
       </a>
     </li>
   );
@@ -187,7 +187,7 @@ function calculateNewFontSize(currentWidth: number, currentHeight: number, maxWi
     // if (delta/fontSize < 0.0025) {
     //   return fontSize;
     // }
-    if (delta < 0.01) {
+    if (Math.abs(delta) < 0.25) {
       return fontSize;
     }
 
@@ -250,9 +250,9 @@ function getAgedColour(base: string, age: number) {
 
   const scale = k1 / (age + k2) + c;
 
-  const b1 = parseInt(base.substr(1, 2), 16);
-  const b2 = parseInt(base.substr(3, 2), 16);
-  const b3 = parseInt(base.substr(5, 2), 16);
+  const b1 = parseInt(base.substring(1, 3), 16);
+  const b2 = parseInt(base.substring(3, 5), 16);
+  const b3 = parseInt(base.substring(5, 7), 16);
 
   const r = Math.floor(b1 * scale).toString(16).padStart(2, "0");
   const g = Math.floor(b2 * scale).toString(16).padStart(2, "0");

@@ -29,23 +29,24 @@ export async function notifyNewKeywordMatches(articles, previouslyCachedIds, raw
       continue
     }
 
+    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/ozelhaber') ? '/ozelhaber' : ''
     const options = {
       body: article.title,
       tag: `news-${article.id}`,
-      icon: '/icon.svg',
+      icon: `${basePath}/icon.svg`,
       data: { url: article.url },
     }
 
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready.catch(() => null)
       if (registration) {
-        await registration.showNotification('NewsMap.JS', options)
+        await registration.showNotification('ÖzelHaber', options)
         continue
       }
     }
 
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      new Notification('NewsMap.JS', options)
+      new Notification('ÖzelHaber', options)
     }
   }
 }

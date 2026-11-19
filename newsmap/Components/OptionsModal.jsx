@@ -13,7 +13,6 @@ import { translate as t } from '../i18n.js';
  * @param {boolean} props.showGradient
  * @param {boolean} props.sentimentHighlighting
  * @param {boolean} props.clusterDuplicates
- * @param {boolean} props.articleSummaryOnClick
  * @param {"dark"|"light"|"oled"} props.theme
  * @param {string} props.notificationKeywords
  * @param {boolean} props.notificationsEnabled

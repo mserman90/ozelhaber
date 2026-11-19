@@ -1,0 +1,8 @@
+{
+  "name": "ozelhaber-desktop",
+  "version": "0.2.0",
+  "author": "Murat Serdar ERMAN",
+  "private": true,
+  "description": "ÖzelHaber Windows masaüstü ve ekran koruyucu kabuğu",
+  "main": "main.cjs"
+}

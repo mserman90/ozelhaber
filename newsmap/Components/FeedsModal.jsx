@@ -10,6 +10,7 @@ import {
 import './FeedsModal.css';
 import { translate as t } from '../i18n.js';
 import { FeedDirectory } from './FeedDirectory.jsx';
+import presetFeeds from '../data/presetFeeds.json';
 
 /**
  * @typedef {import('../customSources.js').CustomSource} CustomSource
@@ -38,7 +39,7 @@ export function FeedsModal({
   onToggle,
   onClose,
 }) {
-  const [tab, setTab] = useState(/** @type {"directory"|"rss"|"search"} */("directory"));
+  const [tab, setTab] = useState(/** @type {"preset"|"rss"|"search"|"directory"} */("preset"));
   const sources = Object.values(customSources);
   const nextColour = pickColour(sources.length);
 
@@ -55,13 +56,13 @@ export function FeedsModal({
         <div className="Feeds-tabs" role="tablist" aria-label={t(locale, "sourceType")}>
           <button
             role="tab"
-            id="tab-directory"
-            aria-selected={tab === "directory"}
-            aria-controls="panel-directory"
-            className={tab === "directory" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
-            onClick={() => setTab("directory")}
+            id="tab-preset"
+            aria-selected={tab === "preset"}
+            aria-controls="panel-preset"
+            className={tab === "preset" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
+            onClick={() => setTab("preset")}
           >
-            {t(locale, "directoryTab")}
+            {t(locale, "presetTab")}
           </button>
           <button
             role="tab"
@@ -75,6 +76,16 @@ export function FeedsModal({
           </button>
           <button
             role="tab"
+            id="tab-directory"
+            aria-selected={tab === "directory"}
+            aria-controls="panel-directory"
+            className={tab === "directory" ? "Feeds-tab Feeds-tab--active" : "Feeds-tab"}
+            onClick={() => setTab("directory")}
+          >
+            {t(locale, "directoryTab")}
+          </button>
+          <button
+            role="tab"
             id="tab-search"
             aria-selected={tab === "search"}
             aria-controls="panel-search"
@@ -85,11 +96,77 @@ export function FeedsModal({
           </button>
         </div>
         <div className="App-modalbody">
-          {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
+          {tab === "preset" && <PresetCatalog locale={locale} customSources={customSources} onAdd={onAdd} />}
           {tab === "rss" && <RssForm key="rss" locale={locale} defaultColour={nextColour} onAdd={onAdd} />}
           {tab === "search" && <SearchForm key="search" locale={locale} defaultColour={nextColour} edition={edition} editionName={editionName} onAdd={onAdd} />}
+          {tab === "directory" && <FeedDirectory locale={locale} sources={sources} onAdd={onAdd} />}
 
-          <h2 className="Feeds-heading">{t(locale, "yourSources")} ({sources.length})</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+            <h2 className="Feeds-heading" style={{ margin: 0 }}>{t(locale, "yourSources")} ({sources.length})</h2>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <label className="btn-link" style={{ cursor: 'pointer', fontSize: '0.85em', padding: '3px 8px', border: '1px solid #555', borderRadius: 4 }}>
+                📥 {t(locale, "importOpml")}
+                <input
+                  type="file"
+                  accept=".opml,.xml"
+                  style={{ display: 'none' }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const text = String(event.target?.result || '');
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/xml');
+                        const outlines = doc.querySelectorAll('outline[xmlUrl], outline[xmlurl]');
+                        let count = 0;
+                        outlines.forEach((node, idx) => {
+                          const url = node.getAttribute('xmlUrl') || node.getAttribute('xmlurl');
+                          const title = node.getAttribute('title') || node.getAttribute('text') || `Feed ${idx + 1}`;
+                          if (url) {
+                            onAdd({
+                              id: createSourceId(),
+                              type: 'rss',
+                              url,
+                              name: title,
+                              colour: pickColour(sources.length + count),
+                            });
+                            count++;
+                          }
+                        });
+                        alert(count > 0 ? t(locale, 'opmlImportSuccess') : t(locale, 'opmlImportError'));
+                      } catch {
+                        alert(t(locale, 'opmlImportError'));
+                      }
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              {sources.some(s => s.type === 'rss') && (
+                <button
+                  type="button"
+                  style={{ fontSize: '0.85em', padding: '3px 8px', border: '1px solid #555', borderRadius: 4, background: 'transparent', color: '#ccc', cursor: 'pointer' }}
+                  onClick={() => {
+                    const rssSources = sources.filter(s => s.type === 'rss' && s.url);
+                    const escape = (str = '') => str.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '\'': '&apos;', '"': '&quot;' })[c]);
+                    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head>\n    <title>ÖzelHaber RSS</title>\n    <dateCreated>${new Date().toUTCString()}</dateCreated>\n  </head>\n  <body>\n    <outline text="Haber Kaynakları" title="Haber Kaynakları">\n${rssSources.map(s => `      <outline type="rss" text="${escape(s.name)}" title="${escape(s.name)}" xmlUrl="${escape(s.url)}" htmlUrl="${escape(s.url)}" />`).join('\n')}\n    </outline>\n  </body>\n</opml>`;
+                    const blob = new Blob([xml], { type: 'text/xml' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = 'ozelhaber-feeds.opml';
+                    a.click();
+                    URL.revokeObjectURL(blobUrl);
+                  }}
+                >
+                  📤 {t(locale, "exportOpml")}
+                </button>
+              )}
+            </div>
+          </div>
           {sources.length === 0 ?
             <p className="Feeds-hint">{t(locale, "noCustomSources")}</p> :
             <ul className="Feeds-list">
@@ -113,6 +190,79 @@ export function FeedsModal({
       </div>
     </div>
   );
+}
+
+/**
+ * @param {object} props
+ * @param {"en"|"tr"} props.locale
+ * @param {{ [id: string]: CustomSource }} props.customSources
+ * @param {(source: CustomSource) => void} props.onAdd
+ */
+function PresetCatalog({ locale, customSources, onAdd }) {
+  const [filter, setFilter] = useState('all')
+  const [addingUrl, setAddingUrl] = useState('')
+  const [error, setError] = useState('')
+  const existingUrls = new Set(Object.values(customSources).map(source => source.url).filter(Boolean))
+  const groups = [
+    { id: 'all', label: t(locale, 'presetAll') },
+    { id: 'general', label: t(locale, 'presetGeneral') },
+    { id: 'tech', label: t(locale, 'presetTech') },
+    { id: 'economy', label: t(locale, 'presetEconomy') },
+    { id: 'global', label: t(locale, 'presetGlobal') },
+  ]
+  const feeds = presetFeeds.filter(feed => filter === 'all' || feed.category === filter)
+
+  async function addPreset(preset) {
+    setAddingUrl(preset.url)
+    setError('')
+    try {
+      const feed = await getCustomFeed({ url: preset.url })
+      if (feed.articles.length === 0) throw new Error(t(locale, 'feedEmpty'))
+      onAdd({
+        id: createSourceId('rss'),
+        name: preset.name,
+        type: 'rss',
+        url: preset.url,
+        color: preset.color,
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t(locale, 'feedLoadError'))
+    } finally {
+      setAddingUrl('')
+    }
+  }
+
+  return (
+    <section className="Feeds-presets" id="panel-preset" role="tabpanel" aria-labelledby="tab-preset">
+      <p className="Feeds-hint">{t(locale, 'presetHint')}</p>
+      <div className="Feeds-tabs" aria-label={t(locale, 'directoryTitle')}>
+        {groups.map(group => (
+          <button key={group.id} type="button" className={filter === group.id ? 'Feeds-tab Feeds-tab--active' : 'Feeds-tab'} onClick={() => setFilter(group.id)}>
+            {group.label}
+          </button>
+        ))}
+      </div>
+      {error && <p className="Feeds-status Feeds-status--error" role="alert">{error}</p>}
+      <div className="Feeds-preset-grid">
+        {feeds.map(preset => {
+          const added = existingUrls.has(preset.url)
+          const loading = addingUrl === preset.url
+          return (
+            <article key={preset.id} className="Feeds-preset-card">
+              <span className="Feeds-swatch" style={{ backgroundColor: preset.color }} aria-hidden="true" />
+              <div className="Feeds-preset-description">
+                <strong>{preset.name}</strong>
+                <small>{preset.description}</small>
+              </div>
+              <button type="button" disabled={added || !!addingUrl} onClick={() => addPreset(preset)}>
+                {added ? t(locale, 'directoryAdded') : loading ? t(locale, 'checkingSource') : t(locale, 'addPreset')}
+              </button>
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
 }
 
 /**

@@ -1,0 +1,53 @@
+name: Windows Desktop Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'desktop-v*'
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile --force
+
+      - name: Package Windows installer
+        run: pnpm package:win
+
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ozelhaber-windows
+          path: release/*.exe
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/OzelHaber-Setup-*.exe
+          name: ÖzelHaber Windows Masaüstü & Ekran Koruyucu ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

@@ -8,5 +8,6 @@ minimumReleaseAgeExclude:
   - next
 
 allowBuilds:
+  electron-winstaller: false
   onnxruntime-node: false
   protobufjs: false
