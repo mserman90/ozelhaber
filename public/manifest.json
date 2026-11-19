@@ -1,7 +1,7 @@
 {
   "name": "ÖzelHaber - İnteraktif Haber Haritası",
   "short_name": "ÖzelHaber",
-  "description": "Google News ve özel RSS beslemelerinden beslenen yapay zeka destekli interaktif treemap haber haritası.",
+  "description": "Google News ve özel RSS beslemelerinden beslenen gerçek zamanlı interaktif treemap haber haritası.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111111",

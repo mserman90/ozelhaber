@@ -1,7 +1,7 @@
 {
   "name": "ozelhaber",
   "version": "0.2.0",
-  "description": "Yapay zeka destekli interaktif haber haritası ve treemap görselleştiricisi",
+  "description": "Gerçek zamanlı interaktif haber haritası ve treemap görselleştiricisi",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@huggingface/transformers": "^4.3.2",
     "@vercel/analytics": "1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

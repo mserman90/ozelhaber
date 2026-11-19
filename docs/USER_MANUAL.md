@@ -8,14 +8,13 @@ Bu kılavuzda uygulamanın tüm özelliklerini, kısayollarını ve püf noktala
 
 ## 📌 İçindekiler
 1. [Hızlı Başlangıç ve Temel Arayüz](#1-hızlı-başlangıç-ve-temel-arayüz)
-2. [Haberleri Okuma ve Detay Modalı](#2-haberleri-okuma-ve-detay-modalı)
-3. [✨ Ücretsiz Yapay Zeka (AI) Haber Özeti](#3-ücretsiz-yapay-zeka-ai-haber-özeti)
-4. [📚 Hazır Kaynak Kataloğundan Haber Ekleme](#4-hazır-kaynak-kataloğundan-haber-ekleme)
-5. [🔍 Kendi RSS veya Google Dork Aramanızı Ekleyin](#5-kendi-rss-veya-google-dork-aramanızı-ekleyin)
-6. [🎨 Görsel Temalar ve Kişiselleştirme](#6-görsel-temalar-ve-kişiselleştirme)
-7. [🔗 Panoyu Paylaşma (Stateful URLs)](#7-panoyu-paylaşma-stateful-urls)
-8. [📱 Mobil Kullanım ve PWA Olarak Yükleme](#8-mobil-kullanım-ve-pwa-olarak-yükleme)
-9. [⌨️ Klavye Kısayolları ve İpuçları](#9-klavye-kısayolları-ve-ipuçları)
+2. [Haberleri Okuma ve Kaynaklara Erişim](#2-haberleri-okuma-ve-kaynaklara-erişim)
+3. [📚 Hazır Kaynak Kataloğundan Haber Ekleme](#3-hazır-kaynak-kataloğundan-haber-ekleme)
+4. [🔍 Kendi RSS veya Google Dork Aramanızı Ekleyin](#4-kendi-rss-veya-google-dork-aramanızı-ekleyin)
+5. [🎨 Görsel Temalar ve Kişiselleştirme](#5-görsel-temalar-ve-kişiselleştirme)
+6. [🔗 Panoyu Paylaşma (Stateful URLs)](#6-panoyu-paylaşma-stateful-urls)
+7. [📱 Mobil Kullanım ve PWA Olarak Yükleme](#7-mobil-kullanım-ve-pwa-olarak-yükleme)
+8. [⌨️ Klavye Kısayolları ve İpuçları](#8-klavye-kısayolları-ve-ipuçları)
 
 ---
 
@@ -41,39 +40,16 @@ Bu kılavuzda uygulamanın tüm özelliklerini, kısayollarını ve püf noktala
 
 ---
 
-## 2. Haberleri Okuma ve Detay Modalı
+## 2. Haberleri Okuma ve Kaynaklara Erişim
 
-- **Habere Tıklama:**
-  - Haritadaki bir haber kutusuna tıkladığınızda **Haber Detay ve Özet Penceresi** açılır.
-  - Açılan pencerede:
-    - Haberin tam başlığı ve ana yayın organı,
-    - Haberin yayınlanma saati,
-    - **"📖 Haberi Orijinal Kaynakta Oku"** butonu,
-    - Varsa aynı olayı aktaran alternatif diğer yayıncıların haber başlıkları listelenir.
+- **Doğrudan Habere Gitme:**
+  - Haritadaki herhangi bir haber kutusuna tıkladığınızda doğrudan ilgili haberin orijinal kaynağına yönlendirilirsiniz (Seçenekler menüsünden yeni sekmede veya aynı sekmede açılmasını tercih edebilirsiniz).
+- **Çoklu Kaynak İnceleme (İsteğe Bağlı):**
+  - Seçenekler menüsünden *"Bağlantıyı açmadan önce kaynakları göster"* tercihini açarsanız, tıklanan haberin tüm kaynaklarını listeleyen temiz detay penceresi açılır.
 
 ---
 
-## 3. ✨ Ücretsiz Yapay Zeka (AI) Haber Özeti
-
-ÖzelHaber, **herhangi bir API anahtarı veya ödeme gerektirmeyen**, tamamen ücretsiz açık yapay zeka modelleri (Mistral AI / Pollinations) ile entegre çalışır.
-
-1. Detay modalındaki **"✨ Yapay Zeka Özeti (Ücretsiz)"** butonuna tıklayın.
-2. 1-2 saniye içinde yapay zeka haberi tarayarak şunları üretir:
-   - **Kilit Çıkarım (Key Takeaway):** Haberin tek cümlelik ana fikri.
-   - **3 Maddelik Hap Bilgi:** Haberin konusu, arka planı ve olası etkisi.
-   - **Duygu / Ton Rozeti:** Haberin tonu anında analiz edilir:
-     - 🟢 **Olumlu:** Başarı, rekor, anlaşma, bilimsel buluş.
-     - 🔵 **Dengeli / Nötr:** Standart bilgilendirici haber.
-     - 🔴 **Kritik / Olumsuz:** Kriz, düşüş, kaza.
-     - 🚨 **Son Dakika / Acil:** Kritik önemdeki gelişmeler ve uyarılar.
-   - **Akıllı Etiketler:** Konuyla ilgili otomatik etiketler.
-
-> [!TIP]
-> Çevrimdışıysanız veya genel yapay zeka servisine anlık erişilemiyorsa, sistem otomatik olarak **yerel kural tabanlı NLP motoruna** geçerek özet üretmeye kesintisiz devam eder.
-
----
-
-## 4. 📚 Hazır Kaynak Kataloğundan Haber Ekleme
+## 3. 📚 Hazır Kaynak Kataloğundan Haber Ekleme
 
 Kendi özel haber panonuzu oluşturmak için elle RSS adresi aramanıza gerek yoktur:
 

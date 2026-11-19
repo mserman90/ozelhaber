@@ -33,7 +33,6 @@ type AppState = {
   itemsPerCategory: number
   newTab: boolean
   enableSourcesModal: boolean
-  articleSummaryOnClick: boolean
   wakeLock: boolean
   searchValue: SearchFilter
   selectedArticle: Article | null
@@ -64,7 +63,6 @@ function createDefaultState(): AppState {
     itemsPerCategory: 10,
     newTab: true,
     enableSourcesModal: false,
-    articleSummaryOnClick: true,
     wakeLock: false,
     weightingMode: 'time',
     searchValue: { ...defaultSearchContextValue },
@@ -287,7 +285,7 @@ export default function App({ refreshTime, donationLink }: AppProps) {
   }
 
   function handleArticleClick(article: Article, event: MouseEvent<HTMLAnchorElement>) {
-    if (!state.articleSummaryOnClick && !state.enableSourcesModal) return
+    if (!state.enableSourcesModal) return
     event.preventDefault()
     updateState({ selectedArticle: article })
   }
@@ -440,7 +438,6 @@ export default function App({ refreshTime, donationLink }: AppProps) {
           showGradient={state.showGradient}
           sentimentHighlighting={state.sentimentHighlighting}
           clusterDuplicates={state.clusterDuplicates}
-          articleSummaryOnClick={state.articleSummaryOnClick}
           theme={state.theme}
           notificationKeywords={state.notificationKeywords}
           notificationsEnabled={state.notificationsEnabled}

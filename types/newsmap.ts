@@ -53,11 +53,3 @@ export interface PresetFeed {
   description?: string
   locale: 'tr' | 'en' | 'all'
 }
-
-export interface SummaryResponse {
-  summary: string[]
-  sentiment?: 'positive' | 'neutral' | 'negative' | 'critical'
-  tags?: string[]
-  keyTakeaway?: string
-  isFallback?: boolean
-}

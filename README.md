@@ -1,12 +1,11 @@
-# 🗺️ ÖzelHaber - Yapay Zeka Destekli İnteraktif Haber Haritası
+# 🗺️ ÖzelHaber - İnteraktif Haber Haritası
 
 [![Deploy to GitHub Pages](https://github.com/mserman90/ozelhaber/actions/workflows/deploy.yml/badge.svg)](https://github.com/mserman90/ozelhaber/actions/workflows/deploy.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.4-black)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
-[![Zero-Key AI](https://img.shields.io/badge/AI-Free%20%26%20Zero--Key-brightgreen)](docs/ACADEMIC_WHITEPAPER.md)
 
-**ÖzelHaber**, efsanevi haber görselleştirme platformu [newsmap.jp](http://newsmap.jp) ve açık kaynaklı NewsMap.JS mirasından esinlenerek geliştirilmiş; **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** ve **Ücretsiz / Anahtarsız Açık Yapay Zeka (Zero-Key Open-LLM)** ile güçlendirilmiş modern bir haber panosudur.
+**ÖzelHaber**, efsanevi haber görselleştirme platformu [newsmap.jp](http://newsmap.jp) ve açık kaynaklı NewsMap.JS mirasından esinlenerek geliştirilmiş; **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** ile güçlendirilmiş modern, hızlı ve duyarlı bir haber panosudur.
 
 🌐 **Canlı Uygulama:** [https://mserman90.github.io/ozelhaber/](https://mserman90.github.io/ozelhaber/)  
 📄 **Akademik Teknik Makale (Whitepaper):** [docs/ACADEMIC_WHITEPAPER.md](docs/ACADEMIC_WHITEPAPER.md)  
@@ -21,10 +20,10 @@
 - Treemap, Birleşik Treemap ve Izgara (Grid) düzen modları.
 - WCAG 2.1 bağıl parlaklık standardına göre otomatik kontrastlı tipografi.
 
-### 2. 🤖 %100 Ücretsiz & Anahtarsız Yapay Zeka Haber Özeti (Zero-Key AI)
-- **Kredi kartı veya API anahtarı gerekmez:** Açık model havuzu (Mistral / Pollinations) ve yerel kural tabanlı NLP motoru ile sıfır maliyetle çalışır.
-- Tek tıkla haberin kilit çıkarımı (Key Takeaway), 3 maddelik hap özeti, duygu analizi (*Pozitif, Dengeli, Kritik, Acil*) ve anahtar etiketler üretilir.
-- Statik GitHub Pages ortamında bile doğrudan tarayıcı üzerinden kesintisiz çalışır.
+### 2. ⚡ Doğrudan ve Hızlı Haber Erişimi
+- Herhangi bir haber kutucuğuna tıklandığında doğrudan orijinal kaynağa anında yönlendirme.
+- Birden fazla kaynağa sahip haberlerde dileyen kullanıcılar için çoklu kaynak inceleme desteği.
+- Sıfır gecikme, sıfır harici API bağımlılığı ve tamamen güvenli istemci tarafı deneyim.
 
 ### 3. 📚 Zengin Hazır Kaynak Kataloğu (Preset Directory)
 - Tek tıkla haritaya eklenebilen seçkin kaynaklar:

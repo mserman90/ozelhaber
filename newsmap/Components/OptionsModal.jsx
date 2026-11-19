@@ -37,7 +37,6 @@ export function OptionsModal({
   showGradient,
   sentimentHighlighting,
   clusterDuplicates,
-  articleSummaryOnClick,
   theme = "dark",
   notificationKeywords = "",
   notificationsEnabled = false,
@@ -171,10 +170,6 @@ export function OptionsModal({
               {t(locale, "openNewTab")}
             </label>
             <input id="chk-new-tab" type="checkbox" checked={newTab} onChange={e => setSavedState({ newTab: e.target.checked })} />
-          </div>
-          <div className="App-formgroup">
-            <label htmlFor="chk-summary-click">{t(locale, "articleSummaryOnClick")}</label>
-            <input id="chk-summary-click" type="checkbox" checked={articleSummaryOnClick} onChange={e => setSavedState({ articleSummaryOnClick: e.target.checked })} />
           </div>
           <div className="App-formgroup">
             <label htmlFor="chk-sources-modal">
