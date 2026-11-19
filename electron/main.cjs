@@ -1,5 +1,16 @@
 const { app, BrowserWindow, Menu, Tray, dialog, shell, nativeImage, powerSaveBlocker, ipcMain, net } = require('electron')
 const path = require('node:path')
+const fs = require('node:fs')
+const os = require('node:os')
+
+const logFile = path.join(os.tmpdir(), 'ozelhaber_desktop.log')
+function log(...items) {
+  try {
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${items.map(x => typeof x === 'object' ? JSON.stringify(x) : x).join(' ')}\n`)
+  } catch {}
+}
+
+log('App starting with args:', process.argv)
 
 const GITHUB_PAGES_URL = 'https://mserman90.github.io/ozelhaber/'
 const VERCEL_URL = 'https://haber-vert.vercel.app/'
@@ -16,16 +27,22 @@ let blockerId
 let quitting = false
 
 app.setName('ÖzelHaber')
-app.on('before-quit', () => { quitting = true })
+app.on('before-quit', () => {
+  log('before-quit fired')
+  quitting = true
+})
 
 // Single instance lock for regular desktop mode
 if (!screensaverMode && !configMode && !previewMode) {
   const gotTheLock = app.requestSingleInstanceLock()
+  log('requestSingleInstanceLock gotTheLock:', gotTheLock)
   if (!gotTheLock) {
+    log('Could not get lock, quitting')
     app.quit()
     process.exit(0)
   }
   app.on('second-instance', () => {
+    log('second-instance triggered')
     showDesktop()
   })
 }
@@ -246,11 +263,21 @@ function createWindow(isScreensaver = screensaverMode) {
   })
 
   if (isScreensaver) {
-    mainWindow.on('ready-to-show', () => mainWindow?.show())
+    mainWindow.on('ready-to-show', () => {
+      log('screensaver ready-to-show')
+      mainWindow?.show()
+    })
   } else {
-    mainWindow.on('ready-to-show', () => mainWindow?.show())
-    mainWindow.on('closed', () => { mainWindow = null })
+    mainWindow.on('ready-to-show', () => {
+      log('desktop ready-to-show')
+      mainWindow?.show()
+    })
+    mainWindow.on('closed', () => {
+      log('mainWindow closed')
+      mainWindow = null
+    })
     mainWindow.on('close', (event) => {
+      log('mainWindow close event, tray:', Boolean(tray), 'quitting:', quitting)
       if (tray && !quitting) {
         event.preventDefault()
         mainWindow?.hide()
@@ -330,7 +357,11 @@ function makeTray() {
   }
 }
 
+process.on('uncaughtException', (err) => log('uncaughtException:', err.stack || err))
+process.on('unhandledRejection', (reason) => log('unhandledRejection:', reason))
+
 if (configMode) {
+  log('Running in configMode')
   app.whenReady().then(() => dialog.showMessageBox({
     type: 'info',
     title: 'ÖzelHaber ekran koruyucu',
@@ -339,6 +370,7 @@ if (configMode) {
   }).then(() => app.quit()))
 } else {
   app.whenReady().then(() => {
+    log('app whenReady fired, screensaverMode:', screensaverMode, 'previewMode:', previewMode)
     if (screensaverMode) {
       blockerId = powerSaveBlocker.start('prevent-display-sleep')
       createWindow(true)
@@ -354,5 +386,11 @@ if (configMode) {
 }
 
 app.on('activate', () => { if (!screensaverMode) showDesktop() })
-app.on('window-all-closed', () => { if (process.platform !== 'darwin' || screensaverMode) app.quit() })
-app.on('will-quit', () => { if (blockerId !== undefined && powerSaveBlocker.isStarted(blockerId)) powerSaveBlocker.stop(blockerId) })
+app.on('window-all-closed', () => {
+  log('window-all-closed event fired')
+  if (process.platform !== 'darwin' || screensaverMode) app.quit()
+})
+app.on('will-quit', () => {
+  log('will-quit event fired')
+  if (blockerId !== undefined && powerSaveBlocker.isStarted(blockerId)) powerSaveBlocker.stop(blockerId)
+})
