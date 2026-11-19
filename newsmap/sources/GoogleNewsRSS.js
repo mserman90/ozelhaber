@@ -1,0 +1,525 @@
+import { ucfirst, urlize } from '../util';
+
+import editions from '../data/editions.json';
+import oldEditions from '../data/oldEditions.json';
+import { getEnv } from '../env';
+
+function apiRoot() {
+    const envRoot = getEnv()['API_ROOT'];
+    if (envRoot) return envRoot;
+    return (typeof window !== 'undefined' ? window.location.origin : "") + "/api";
+}
+
+/** @type {Map<string, Promise<{ [category: string]: string }>>} */
+const editionUrlCache = new Map();
+
+/**
+ * @param {object} options
+ * @param {string} options.category
+ * @param {string} options.edition
+ */
+export async function getNews(options) {
+    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/ozelhaber') ? '/ozelhaber' : '';
+    const normCategory = (options.category || '').toLowerCase();
+
+    // 1. First, check pre-rendered static snapshot (zero CORS, zero rate-limit, instant render)
+    try {
+        const candidateKeys = [normCategory];
+        if (normCategory === 'nation') candidateKeys.push('national');
+        if (normCategory === 'national') candidateKeys.push('nation');
+
+        for (const catKey of candidateKeys) {
+            const cacheUrl = `${basePath}/data/cache/${options.edition}_${catKey}.json`;
+            const res = await fetch(cacheUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.articles) && data.articles.length > 0) {
+                    return {
+                        title: data.title || ucfirst(options.category),
+                        category: options.category,
+                        articles: data.articles,
+                    };
+                }
+            }
+        }
+    } catch (e) {
+        console.warn(`[Snapshot Cache] Fallback for ${options.edition}_${options.category}:`, e);
+    }
+
+    const urls = await getEditionUrls(options.edition);
+    const path = urls[normCategory] || (normCategory === 'national' ? urls['nation'] : null);
+
+    if (!path) {
+        throw Error("Can't find URL for edition/category");
+    }
+
+    const googleNewsUrl = `https://news.google.com/rss/topics${path}`;
+    const localApiUrl = `${apiRoot()}/rss/topics${path}`;
+
+    const { title, articles } = await fetchFeedUnified({
+        localUrl: localApiUrl,
+        upstreamUrl: googleNewsUrl,
+        googleSources: true,
+    });
+
+    return {
+        title: title || ucfirst(options.category),
+        category: options.category,
+        articles,
+    };
+}
+
+/**
+ * Google News search feed. Supports the same operators as the Google News
+ * search box, e.g. `"exact phrase" site:bbc.co.uk intitle:election -sport when:7d`.
+ *
+ * @param {object} options
+ * @param {string} options.query
+ * @param {string} options.edition Used for language/region (hl, gl, ceid)
+ */
+export async function searchNews(options) {
+    const urls = await getEditionUrls(options.edition);
+    const params = new URLSearchParams(getLocaleQuery(urls));
+    params.set("q", options.query);
+
+    const googleNewsUrl = `https://news.google.com/rss/search?${params}`;
+    const localApiUrl = `${apiRoot()}/rss/search?${params}`;
+
+    const { articles } = await fetchFeedUnified({
+        localUrl: localApiUrl,
+        upstreamUrl: googleNewsUrl,
+        googleSources: true,
+    });
+
+    return { title: options.query, articles };
+}
+
+/**
+ * Any user-supplied RSS 2.0, RSS 1.0 (RDF) or Atom feed, fetched through the
+ * server-side proxy or public CORS fallbacks.
+ *
+ * @param {object} options
+ * @param {string} options.url
+ */
+export async function getCustomFeed(options) {
+    const localApiUrl = `${apiRoot()}/feed?url=${encodeURIComponent(options.url)}`;
+    let fallbackSource = "";
+    try {
+        fallbackSource = new URL(options.url).hostname.replace(/^www\./, "");
+    } catch (e) { /* ignore */ }
+
+    const { title, articles } = await fetchFeedUnified({
+        localUrl: localApiUrl,
+        upstreamUrl: options.url,
+        googleSources: false,
+        fallbackSource,
+    });
+
+    return { title, articles };
+}
+
+/**
+ * Unified feed fetcher for Node.js / Vercel (local /api) and Static GitHub Pages.
+ */
+async function fetchFeedUnified({ localUrl, upstreamUrl, googleSources, fallbackSource = "" }) {
+    const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+
+    // 1. Try local server API first if running locally or on server
+    if (!isGhPages && localUrl) {
+        try {
+            const doc = await xmlFetch(localUrl);
+            return parseFeed(doc, { googleSources, fallbackSource });
+        } catch (e) {
+            console.warn("[Feed] Local API failed, trying upstream fallbacks...", e);
+        }
+    }
+
+    // 2. Try allorigins.win JSON proxy (safe CORS wrapper, handles XML content cleanly)
+    if (upstreamUrl) {
+        try {
+            const allOriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(upstreamUrl)}`;
+            const res = await fetch(allOriginsUrl);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.contents) {
+                    const doc = (new DOMParser()).parseFromString(json.contents, "text/xml");
+                    if (doc.getElementsByTagName("parsererror").length === 0) {
+                        const parsed = parseFeed(doc, { googleSources, fallbackSource });
+                        if (parsed.articles && parsed.articles.length > 0) return parsed;
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn("[Feed] allorigins get failed:", err);
+        }
+    }
+
+    // 3. Try rss2json (CORS enabled, highly reliable for Google News and custom feeds)
+    if (upstreamUrl) {
+        try {
+            const rss2JsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(upstreamUrl)}`;
+            const res = await fetch(rss2JsonUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
+                    return parseRss2Json(data, { googleSources, fallbackSource });
+                }
+            }
+        } catch (err) {
+            console.warn("[Feed] rss2json failed, trying CORS proxies...", err);
+        }
+    }
+
+    // 4. Fallback to public CORS proxy XML fetch
+    if (upstreamUrl) {
+        const proxies = [
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(upstreamUrl)}`,
+            `https://corsproxy.io/?url=${encodeURIComponent(upstreamUrl)}`,
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(upstreamUrl)}`
+        ];
+
+        for (const proxy of proxies) {
+            try {
+                const doc = await xmlFetch(proxy);
+                return parseFeed(doc, { googleSources, fallbackSource });
+            } catch (err) {
+                // Try next
+            }
+        }
+    }
+
+    throw new Error("Haber akışı sunucudan veya harici proxy kaynaklarından alınamadı.");
+}
+
+/**
+ * Parses rss2json JSON response into NewsMap article objects
+ */
+function parseRss2Json(data, { googleSources, fallbackSource = "" }) {
+    const feedTitle = data.feed?.title || "";
+    const [title] = feedTitle.split(" - ");
+    const defaultSource = fallbackSource || feedTitle;
+    const seen = new Set();
+
+    const articles = data.items.map((item, idx) => {
+        let itemTitle = decodeHtml(item.title || "").trim();
+        const url = safeHttpUrl(item.link || "");
+        const id = item.guid || url || itemTitle || String(idx);
+
+        let sourceName = item.author || defaultSource;
+        const sourceTail = ` - ${sourceName}`;
+        if (sourceName && itemTitle.endsWith(sourceTail)) {
+            itemTitle = itemTitle.substring(0, itemTitle.length - sourceTail.length);
+        } else {
+            const match = itemTitle.match(/\s*-\s*([^-]+)$/);
+            if (match && match[1]) {
+                sourceName = match[1].trim();
+                itemTitle = itemTitle.substring(0, match.index).trim();
+            }
+        }
+
+        const parsedDate = item.pubDate ? new Date(item.pubDate) : null;
+        const publishedAt = parsedDate && !isNaN(+parsedDate) ? parsedDate.toISOString() : new Date().toISOString();
+        const imageURL = safeHttpUrl(item.thumbnail || item.enclosure?.link || "");
+
+        let sources = [];
+        if (googleSources && item.description) {
+            try {
+                const descDoc = (new DOMParser()).parseFromString(item.description, "text/html");
+                const liEls = Array.from(descDoc.getElementsByTagName("li"));
+                sources = liEls.map(liEl => {
+                    const fontEl = liEl.getElementsByTagName("font")[0];
+                    const name = (fontEl ? fontEl.textContent : "") || "";
+                    const aEl = liEl.getElementsByTagName("a")[0];
+                    let subTitle = aEl ? aEl.textContent || "" : "";
+                    const subUrl = aEl ? safeHttpUrl(aEl.getAttribute("href") || "") : "";
+                    const subTail = ` - ${name}`;
+                    if (name && subTitle.endsWith(subTail)) {
+                        subTitle = subTitle.substring(0, subTitle.length - subTail.length);
+                    }
+                    return { id: urlize(name || subTitle), name, title: subTitle, url: subUrl };
+                }).filter(s => s.name && s.url);
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+
+        if (sources.length === 0) {
+            sources = [{
+                id: urlize(sourceName || "Haber"),
+                name: sourceName || "Haber",
+                title: itemTitle,
+                url,
+            }];
+        }
+
+        return {
+            id,
+            title: itemTitle,
+            url,
+            publishedAt,
+            sources,
+            imageURL,
+            description: item.description ? item.description.replace(/<[^>]*>/g, '').trim() : '',
+        };
+    }).filter(article => {
+        if (!article.title || !article.url || seen.has(article.id)) return false;
+        seen.add(article.id);
+        return true;
+    });
+
+    return { title: title || feedTitle, articles };
+}
+
+/**
+ * @param {string} edition
+ */
+export function getGoogleNewsSearchUrl(query, edition) {
+    const params = new URLSearchParams();
+    params.set("q", query);
+    const [, locale] = editionHint(edition);
+    if (locale) {
+        for (const [k, v] of new URLSearchParams(locale)) params.set(k, v);
+    }
+    return `https://news.google.com/search?${params}`;
+}
+
+/** Synchronous best-effort locale for building outbound links. */
+function editionHint(edition) {
+    const [country, lang] = resolveEdition(edition).split("_");
+    if (!country || !lang) return [edition, ""];
+    const hl = lang.includes("-") ? lang : `${lang}-${country}`;
+    return [edition, `hl=${hl}&gl=${country}&ceid=${country}:${lang}`];
+}
+
+/**
+ * @param {string} ed
+ */
+function resolveEdition(ed) {
+    if (findEdition(ed)) return ed;
+
+    if (oldEditions[ed] && findEdition(oldEditions[ed].value)) {
+        return oldEditions[ed].value;
+    }
+
+    console.error("Can't find edition " + ed);
+    return "TR_tr";
+}
+
+/**
+ * @param {string} edition
+ */
+function getEditionUrls(edition) {
+    const ed = resolveEdition(edition);
+    let promise = editionUrlCache.get(ed);
+    if (!promise) {
+        const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/ozelhaber') ? '/ozelhaber' : '';
+        promise = fetch(`${basePath}/editions/${ed}.json`).then(r => {
+            if (!r.ok) throw Error(`Can't load edition ${ed}`);
+            return r.json();
+        });
+        promise.catch(() => editionUrlCache.delete(ed));
+        editionUrlCache.set(ed, promise);
+    }
+    return promise;
+}
+
+/**
+ * Topic URLs look like `/CAAq...?ceid=GB:en&hl=en-GB&gl=GB`; reuse their
+ * locale params for search requests.
+ * @param {{ [category: string]: string }} urls
+ */
+function getLocaleQuery(urls) {
+    const sample = Object.values(urls)[0] || "";
+    return sample.split("?")[1] || "";
+}
+
+/**
+ * @param {Element | Document} parent
+ * @param {string[]} tagNames
+ */
+function firstText(parent, tagNames) {
+    for (const tag of tagNames) {
+        const el = parent.getElementsByTagName(tag)[0];
+        const text = el && (el.textContent || "").trim();
+        if (text) return text;
+    }
+    return "";
+}
+
+/**
+ * @param {string} url
+ */
+function safeHttpUrl(url) {
+    try {
+        const parsed = new URL(url, "https://invalid.local");
+        if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname !== "invalid.local") {
+            return parsed.href;
+        }
+    } catch (e) { /* ignore */ }
+    return "";
+}
+
+/**
+ * @param {Element} itemEl
+ */
+function getItemLink(itemEl) {
+    const links = Array.from(itemEl.getElementsByTagName("link"));
+    const atomLink = links.find(l => l.getAttribute("href") && (!l.getAttribute("rel") || l.getAttribute("rel") === "alternate"));
+    if (atomLink) return atomLink.getAttribute("href") || "";
+    const rssLink = links.find(l => (l.textContent || "").trim());
+    if (rssLink) return (rssLink.textContent || "").trim();
+    const guid = itemEl.getElementsByTagName("guid")[0];
+    return guid && guid.getAttribute("isPermaLink") !== "false" ? (guid.textContent || "").trim() : "";
+}
+
+/**
+ * @param {Element} itemEl
+ */
+function getItemImage(itemEl) {
+    for (const tag of ["media:content", "media:thumbnail"]) {
+        const el = itemEl.getElementsByTagName(tag)[0];
+        const url = el && el.getAttribute("url");
+        if (url) return url;
+    }
+    const enclosure = Array.from(itemEl.getElementsByTagName("enclosure"))
+        .find(e => (e.getAttribute("type") || "").startsWith("image/"));
+    return enclosure ? enclosure.getAttribute("url") || "" : "";
+}
+
+/**
+ * Parses RSS 2.0, RSS 1.0 (RDF) and Atom documents into NewsMap articles.
+ *
+ * @param {Document} doc
+ * @param {object} options
+ * @param {boolean} options.googleSources Parse Google News' grouped sources from item descriptions
+ * @param {string} [options.fallbackSource]
+ */
+export function parseFeed(doc, { googleSources, fallbackSource = "" }) {
+    const root = doc.getElementsByTagName("channel")[0] || doc.documentElement;
+    const titleEl = Array.from(root.childNodes).find(n => n.nodeName === "title");
+    const feedTitle = titleEl ? (titleEl.textContent || "").trim() : "";
+    const [title] = feedTitle.split(" - ");
+
+    const defaultSource = fallbackSource || feedTitle;
+    const fetchedAt = new Date().toISOString();
+    const seen = new Set();
+
+    let itemEls = Array.from(doc.getElementsByTagName("item"));
+    if (itemEls.length === 0) {
+        itemEls = Array.from(doc.getElementsByTagName("entry"));
+    }
+
+    const articles = itemEls
+        .map(itemEl => {
+            let title = decodeHtml(firstText(itemEl, ["title"]));
+            const url = safeHttpUrl(getItemLink(itemEl));
+            const id = firstText(itemEl, ["guid", "id"]) || url || title;
+
+            const sourceNameEl = itemEl.getElementsByTagName("source")[0];
+            const sourceName = (sourceNameEl && (sourceNameEl.textContent || "").trim()) || defaultSource;
+
+            const sourceTail = ` - ${sourceName}`;
+            if (sourceName && title.endsWith(sourceTail)) {
+                title = title.substring(0, title.length - sourceTail.length);
+            }
+
+            const rawDate = firstText(itemEl, ["pubDate", "published", "updated", "dc:date"]);
+            const parsedDate = rawDate ? new Date(rawDate) : null;
+            const publishedAt = parsedDate && !isNaN(+parsedDate) ? parsedDate.toISOString() : fetchedAt;
+
+            const imageURL = safeHttpUrl(getItemImage(itemEl));
+
+            let sources = [];
+            const descEl = itemEl.getElementsByTagName("description")[0];
+
+            if (googleSources && descEl) {
+                const desc = decodeHtml(descEl.textContent || "");
+                const descDoc = (new DOMParser()).parseFromString(desc, "text/html");
+
+                sources = Array.from(descDoc.getElementsByTagName("li"))
+                    .map(liEl => {
+                        const nameEl = liEl.getElementsByTagName("font")[0];
+                        const name = nameEl ? nameEl.textContent || "" : "";
+
+                        const aEl = liEl.getElementsByTagName("a")[0];
+                        let title = aEl ? aEl.textContent || "" : "";
+                        const url = aEl ? safeHttpUrl(aEl.getAttribute("href") || "") : "";
+
+                        const sourceTail = ` - ${name}`;
+                        if (title.endsWith(sourceTail)) {
+                            title = title.substring(0, title.length - sourceTail.length);
+                        }
+
+                        return { id: urlize(name), name, title, url };
+                    }).filter(s => s.name && s.url);
+            }
+
+            if (sources.length === 0) {
+                sources = [{
+                    id: urlize(sourceName),
+                    name: sourceName,
+                    title,
+                    url,
+                }];
+            }
+
+            return {
+                id,
+                title,
+                url,
+                publishedAt,
+                sources,
+                imageURL,
+            };
+        })
+        .filter(article => {
+            if (!article.title || !article.url || seen.has(article.id)) return false;
+            seen.add(article.id);
+            return true;
+        });
+
+    return { title, articles };
+}
+
+/**
+ * @param {string} url
+ * @returns {Promise<Document>}
+ */
+async function xmlFetch(url) {
+    const headers = new Headers({ "Accept-Language": "" });
+    const response = await fetch(url, { headers });
+    const text = await response.text();
+
+    if (!response.ok) {
+        let message = `Request failed (HTTP ${response.status})`;
+        try {
+            message = JSON.parse(text).error || message;
+        } catch (e) { /* not JSON */ }
+        throw Error(message);
+    }
+
+    const doc = (new DOMParser()).parseFromString(text, "text/xml");
+    if (doc.getElementsByTagName("parsererror").length > 0) {
+        throw Error("The feed could not be parsed as XML");
+    }
+    return doc;
+}
+
+/**
+ * @param {string} edition
+ */
+function findEdition(edition) {
+    return editions.find(e => e.value === edition);
+}
+
+function decodeHtml(str) {
+    var map =
+    {
+        '&amp;': '&',
+        '&lt;': '<',
+        '&gt;': '>',
+        '&quot;': '"',
+        '&#039;': "'"
+    };
+    return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, m => map[m]);
+}

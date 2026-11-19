@@ -1,0 +1,16 @@
+{
+  "name": "ÖzelHaber - İnteraktif Haber Haritası",
+  "short_name": "ÖzelHaber",
+  "description": "Google News ve özel RSS beslemelerinden beslenen gerçek zamanlı interaktif treemap haber haritası.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#222222",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

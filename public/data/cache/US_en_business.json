@@ -1,0 +1,65 @@
+﻿{
+    "edition":  "US_en",
+    "title":  "BUSİNESS",
+    "category":  "business",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_bus_1",
+                         "sources":  [
+                                         {
+                                             "title":  "TCMB Faiz Kararını Açıkladı",
+                                             "url":  "https://www.bloomberght.com",
+                                             "name":  "Bloomberg HT",
+                                             "id":  "bloomberght"
+                                         },
+                                         {
+                                             "title":  "İş Dünyasından Faiz ve Kredi Koşulları Değerlendirmesi",
+                                             "url":  "https://www.dunya.com",
+                                             "name":  "Dünya Gazetesi",
+                                             "id":  "dunya"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:11:57.8395284Z",
+                         "title":  "Merkez Bankası Para Politikası Kurulu Kararları Sonrası Piyasalar Dengeleniyor",
+                         "url":  "https://www.bloomberght.com"
+                     },
+                     {
+                         "id":  "tr_bus_2",
+                         "sources":  [
+                                         {
+                                             "title":  "BIST 100 Rekor Seviyelere Yaklaşıyor",
+                                             "url":  "https://www.aa.com.tr",
+                                             "name":  "Anadolu Ajansı",
+                                             "id":  "aa"
+                                         },
+                                         {
+                                             "title":  "Yabancı Yatırımcı Girişlerinde Artış Gözleniyor",
+                                             "url":  "https://www.ntv.com.tr/ntvpara",
+                                             "name":  "NTV Para",
+                                             "id":  "ntvpara"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:41:57.8395284Z",
+                         "title":  "Borsa İstanbul BIST 100 Endeksi Teknoloji ve Sanayi Hisseleriyle Yükseliş Trendinde",
+                         "url":  "https://www.borsaistanbul.com"
+                     },
+                     {
+                         "id":  "tr_bus_3",
+                         "sources":  [
+                                         {
+                                             "title":  "TİM Verileri: İhracat 260 Milyar Doları Aştı",
+                                             "url":  "https://www.dunya.com",
+                                             "name":  "Dünya Gazetesi",
+                                             "id":  "dunya"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:01:57.8395284Z",
+                         "title":  "İhracatta Katma Değerli Üretim Payı Arttı: Otomotiv ve Kimya Sektörleri Zirvede",
+                         "url":  "https://www.tim.org.tr"
+                     }
+                 ]
+}

@@ -1,0 +1,107 @@
+﻿{
+    "edition":  "TR_tr",
+    "title":  "GÜNDEM",
+    "category":  "nation",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_nat_1",
+                         "sources":  [
+                                         {
+                                             "title":  "TBMM\u0027de Yeni Yasama Yılında Ekonomik ve Yapısal Reform Paketleri Görüşülüyor",
+                                             "url":  "https://www.aa.com.tr",
+                                             "name":  "Anadolu Ajansı",
+                                             "id":  "aa"
+                                         },
+                                         {
+                                             "title":  "Mecliste Yeni Reform Gündemi Yoğun",
+                                             "url":  "https://www.trthaber.com",
+                                             "name":  "TRT Haber",
+                                             "id":  "trt"
+                                         },
+                                         {
+                                             "title":  "TBMM Genel Kurulu Yeni Kanun Teklifini Tartışıyor",
+                                             "url":  "https://www.ntv.com.tr",
+                                             "name":  "NTV",
+                                             "id":  "ntv"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:06:57.8077841Z",
+                         "title":  "TBMM\u0027de Yeni Yasama Yılında Ekonomik ve Yapısal Reform Paketleri Görüşülüyor",
+                         "url":  "https://www.aa.com.tr/tr/gundem"
+                     },
+                     {
+                         "id":  "tr_nat_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Meteorolojiden 12 İle Sarı ve Turuncu Kodlu Uyarı",
+                                             "url":  "https://www.haberturk.com",
+                                             "name":  "Habertürk",
+                                             "id":  "haberturk"
+                                         },
+                                         {
+                                             "title":  "Kuvvetli Yağış ve Fırtına Uyarısı: Dikkatli Olun",
+                                             "url":  "https://www.sozcu.com.tr",
+                                             "name":  "Sözcü",
+                                             "id":  "sozcu"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:46:57.8395284Z",
+                         "title":  "Meteoroloji Genel Müdürlüğü\u0027nden Marmara ve Ege Bölgesi İçin Kuvvetli Yağış Uyarısı",
+                         "url":  "https://www.mgm.gov.tr"
+                     },
+                     {
+                         "id":  "tr_nat_3",
+                         "sources":  [
+                                         {
+                                             "title":  "YHT Hatlarında Yeni Sefer Dönemi Başladı",
+                                             "url":  "https://www.aa.com.tr",
+                                             "name":  "Anadolu Ajansı",
+                                             "id":  "aa"
+                                         },
+                                         {
+                                             "title":  "Demiryolu Ağı Yeni Hatlarla Genişliyor",
+                                             "url":  "https://www.cumhuriyet.com.tr",
+                                             "name":  "Cumhuriyet",
+                                             "id":  "cumhuriyet"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:21:57.8395284Z",
+                         "title":  "Ulaştırma ve Altyapı Bakanlığı: Yüksek Hızlı Tren Hatlarında Yeni Seferler ve Güzergahlar Açılıyor",
+                         "url":  "https://www.tcdd.gov.tr"
+                     },
+                     {
+                         "id":  "tr_nat_4",
+                         "sources":  [
+                                         {
+                                             "title":  "Yerli Üretime Milyarlarca Liralık AR-GE Desteği",
+                                             "url":  "https://www.hurriyet.com.tr",
+                                             "name":  "Hürriyet",
+                                             "id":  "hurriyet"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T04:41:57.8395284Z",
+                         "title":  "Sanayi ve Teknoloji Bakanlığı AR-GE ve Yenilikçilik Destek Paketinin İkinci Fazını Duyurdu",
+                         "url":  "https://www.sanayi.gov.tr"
+                     },
+                     {
+                         "id":  "tr_nat_5",
+                         "sources":  [
+                                         {
+                                             "title":  "Türkiye Turizmde Hedefleri Aşıyor: 45 Milyon Turist",
+                                             "url":  "https://www.trthaber.com",
+                                             "name":  "TRT Haber",
+                                             "id":  "trt"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T03:51:57.8395284Z",
+                         "title":  "Kültür ve Turizm Bakanlığı Yılın İlk Üç Çeyrek Ziyaretçi Verilerini Açıkladı: Tarihi Rekor",
+                         "url":  "https://www.ktb.gov.tr"
+                     }
+                 ]
+}

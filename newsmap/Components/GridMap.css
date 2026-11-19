@@ -1,0 +1,34 @@
+.GridMap-cat-list {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  height: 100%;
+}
+
+.GridMap-cat-list > li {
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+
+.GridMap-cat-list > li > p {
+  padding: 4px;
+  font-weight: bold;
+  display: none;
+}
+
+.GridMap-article-list {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.GridMap-article-list > li {
+  position: relative;
+  transition: all 2s;
+  flex-shrink: 1;
+  flex-basis: 0;
+}

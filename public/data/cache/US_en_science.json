@@ -1,0 +1,44 @@
+﻿{
+    "edition":  "US_en",
+    "title":  "SCİENCE",
+    "category":  "science",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_sci_1",
+                         "sources":  [
+                                         {
+                                             "title":  "Büyük Patlamadan Yalnızca 300 Milyon Yıl Sonrasına Bakış",
+                                             "url":  "https://evrimagaci.org",
+                                             "name":  "Evrim Ağacı",
+                                             "id":  "evrimagaci"
+                                         },
+                                         {
+                                             "title":  "Gökbilimciler Galaksi Oluşumu Modellerini Yeniden Değerlendiriyor",
+                                             "url":  "https://bilimfili.com",
+                                             "name":  "BilimFili",
+                                             "id":  "bilimfili"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T06:09:57.8395284Z",
+                         "title":  "James Webb Uzay Teleskobu Erken Evrene Dair Bugüne Kadarki En Detaylı Verileri Topladı",
+                         "url":  "https://webb.nasa.gov"
+                     },
+                     {
+                         "id":  "tr_sci_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Yenilenebilir Enerjide Ucuz ve Yüksek Verimli Yeni Hücreler",
+                                             "url":  "https://bilimteknik.tubitak.gov.tr",
+                                             "name":  "Bilim ve Gelecek",
+                                             "id":  "bilimteknik"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:31:57.8395284Z",
+                         "title":  "Perovskit-Silisyum Tandem Güneş Hücrelerinde Verimlilik Dünya Rekoru Kırdı",
+                         "url":  "https://www.nature.com"
+                     }
+                 ]
+}

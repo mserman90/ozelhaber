@@ -1,0 +1,17 @@
+export const feedDirectory = [
+  { region: 'turkey', name: 'TRT Haber — Gündem', url: 'https://www.trthaber.com/xml_mobile.php?tur=xml_genel&kategori=guncel', category: 'world' },
+  { region: 'turkey', name: 'Cumhuriyet — Son Dakika', url: 'https://www.cumhuriyet.com.tr/rss/son_dakika.xml', category: 'nation' },
+  { region: 'turkey', name: 'Sözcü — Gündem', url: 'https://www.sozcu.com.tr/rss', category: 'nation' },
+  { region: 'turkey', name: 'DonanımHaber — Teknoloji', url: 'https://www.donanimhaber.com/rss/tum/', category: 'technology' },
+  { region: 'world', name: 'BBC News — World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', category: 'world' },
+  { region: 'world', name: 'BBC News — Business', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', category: 'business' },
+  { region: 'world', name: 'BBC News — Technology', url: 'https://feeds.bbci.co.uk/news/technology/rss.xml', category: 'technology' },
+  { region: 'world', name: 'The Guardian — World', url: 'https://www.theguardian.com/world/rss', category: 'world' },
+  { region: 'world', name: 'NPR — News', url: 'https://feeds.npr.org/1001/rss.xml', category: 'world' },
+  { region: 'world', name: 'DW — Top Stories', url: 'https://rss.dw.com/rdf/rss-en-all', category: 'world' },
+  { region: 'technology', name: 'TechCrunch', url: 'https://techcrunch.com/feed/', category: 'technology' },
+  { region: 'technology', name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'technology' },
+  { region: 'technology', name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'technology' },
+  { region: 'finance', name: 'The Guardian — Business', url: 'https://www.theguardian.com/business/rss', category: 'business' },
+  { region: 'finance', name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', category: 'business' },
+]

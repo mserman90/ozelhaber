@@ -1,0 +1,77 @@
+﻿{
+    "edition":  "US_en",
+    "title":  "WORLD",
+    "category":  "world",
+    "generatedAt":  "2026-11-19T06:31:57.7918493Z",
+    "articles":  [
+                     {
+                         "id":  "tr_wor_1",
+                         "sources":  [
+                                         {
+                                             "title":  "BM Genel Kurulu\u0027nda Tarihi İklim Kararları",
+                                             "url":  "https://www.bbc.com/turkce",
+                                             "name":  "BBC Türkçe",
+                                             "id":  "bbc"
+                                         },
+                                         {
+                                             "title":  "Dünya Liderleri Karbon Emisyon Hedeflerini Güncelliyor",
+                                             "url":  "https://tr.euronews.com",
+                                             "name":  "Euronews Türkçe",
+                                             "id":  "euronews"
+                                         },
+                                         {
+                                             "title":  "Küresel İklim Fonu İçin Yeni Kaynak Çağrısı",
+                                             "url":  "https://www.dw.com/tr",
+                                             "name":  "DW Türkçe",
+                                             "id":  "dw"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:56:57.8395284Z",
+                         "title":  "Birleşmiş Milletler Zirvesi\u0027nde İklim Değişikliği ve Küresel Güvenlik Masada",
+                         "url":  "https://www.bbc.com/turkce"
+                     },
+                     {
+                         "id":  "tr_wor_2",
+                         "sources":  [
+                                         {
+                                             "title":  "Yapay Zeka İçin İlk Kapsamlı Küresel Hukuk Çerçevesi",
+                                             "url":  "https://tr.euronews.com",
+                                             "name":  "Euronews Türkçe",
+                                             "id":  "euronews"
+                                         },
+                                         {
+                                             "title":  "AB\u0027den Yapay Zeka Risklerine Sıkı Denetim",
+                                             "url":  "https://www.aa.com.tr",
+                                             "name":  "Anadolu Ajansı",
+                                             "id":  "aa"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:36:57.8395284Z",
+                         "title":  "Avrupa Parlamentosu Yapay Zeka Yasasını (EU AI Act) Yürürlüğe Koyuyor",
+                         "url":  "https://tr.euronews.com"
+                     },
+                     {
+                         "id":  "tr_wor_3",
+                         "sources":  [
+                                         {
+                                             "title":  "Bölgesel Barış İçin Diplomatik Trafik Yoğunlaşıyor",
+                                             "url":  "https://www.trthaber.com",
+                                             "name":  "TRT Haber",
+                                             "id":  "trt"
+                                         },
+                                         {
+                                             "title":  "Middle East Talks Advance with International Mediators",
+                                             "url":  "https://www.reuters.com",
+                                             "name":  "Reuters",
+                                             "id":  "reuters"
+                                         }
+                                     ],
+                         "imageURL":  "",
+                         "publishedAt":  "2026-11-19T05:06:57.8395284Z",
+                         "title":  "Orta Doğu Diplomasisinde Ateşkes ve İnsani Yardım Koridorları İçin Yeni Müzakereler",
+                         "url":  "https://www.trthaber.com"
+                     }
+                 ]
+}
