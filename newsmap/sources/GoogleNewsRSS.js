@@ -5,7 +5,12 @@ import oldEditions from '../data/oldEditions.json';
 import { getEnv } from '../env';
 
 function apiRoot() {
-    return getEnv()['API_ROOT'] || (window.location.origin + "/api");
+    const envRoot = getEnv()['API_ROOT'];
+    if (envRoot) return envRoot;
+    if (typeof window !== 'undefined' && window.location.hostname.endsWith('github.io')) {
+        return "https://newsmap.ijmacd.com/api";
+    }
+    return (typeof window !== 'undefined' ? window.location.origin : "") + "/api";
 }
 
 /** @type {Map<string, Promise<{ [category: string]: string }>>} */
@@ -112,7 +117,8 @@ function getEditionUrls(edition) {
     const ed = resolveEdition(edition);
     let promise = editionUrlCache.get(ed);
     if (!promise) {
-        promise = fetch(`/editions/${ed}.json`).then(r => {
+        const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/ozelhaber') ? '/ozelhaber' : '';
+        promise = fetch(`${basePath}/editions/${ed}.json`).then(r => {
             if (!r.ok) throw Error(`Can't load edition ${ed}`);
             return r.json();
         });
@@ -312,37 +318,24 @@ async function xmlFetch(url) {
         // Continue to fallback
     }
 
-    // If local endpoint failed (e.g. running on static GitHub Pages), use public CORS proxies
-    if (!text) {
-        let upstream = url;
+    // Fallback: If local API failed or on static hosting, route through NewsMap proxy
+    if (!text && typeof window !== 'undefined') {
+        let fallbackUrl = url;
         if (url.includes('/api/rss/')) {
-            const parts = url.split('/api/rss/')[1];
-            upstream = `https://news.google.com/rss/${parts}`;
+            const path = url.split('/api/rss/')[1];
+            fallbackUrl = `https://newsmap.ijmacd.com/api/rss/${path}`;
         } else if (url.includes('/api/feed?url=')) {
-            const rawUrl = url.split('/api/feed?url=')[1];
-            upstream = decodeURIComponent(rawUrl);
+            const feedParam = url.split('/api/feed?url=')[1];
+            fallbackUrl = `https://newsmap.ijmacd.com/api/feed?url=${feedParam}`;
         }
 
         try {
-            const proxy1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(upstream)}`;
-            const res1 = await fetch(proxy1);
-            if (res1.ok) {
-                text = await res1.text();
+            const res = await fetch(fallbackUrl, { headers });
+            if (res.ok) {
+                text = await res.text();
             }
-        } catch (e1) {
-            // Try secondary fallback
-        }
-
-        if (!text) {
-            try {
-                const proxy2 = `https://corsproxy.io/?url=${encodeURIComponent(upstream)}`;
-                const res2 = await fetch(proxy2);
-                if (res2.ok) {
-                    text = await res2.text();
-                }
-            } catch (e2) {
-                // Ignore
-            }
+        } catch (e) {
+            // Ignore
         }
     }
 

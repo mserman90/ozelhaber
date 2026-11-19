@@ -15,8 +15,11 @@ export function NewsMapClient() {
   )
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined)
+    if ('serviceWorker' in navigator && typeof window !== 'undefined') {
+      const isGhPages = window.location.pathname.startsWith('/ozelhaber')
+      const swUrl = isGhPages ? '/ozelhaber/sw.js' : '/sw.js'
+      const scope = isGhPages ? '/ozelhaber/' : '/'
+      navigator.serviceWorker.register(swUrl, { scope }).catch(() => undefined)
     }
   }, [])
 

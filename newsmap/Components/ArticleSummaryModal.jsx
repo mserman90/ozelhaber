@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { translate as t } from '../i18n.js'
+import { generateFreeAISummary } from '../../lib/free-ai'
 import './ArticleSummaryModal.css'
 
 const localModels = new Map()
@@ -56,14 +57,12 @@ export function ArticleSummaryModal({ article, locale, newTab, onClose }) {
       setSummary(generated?.summary_text || generated?.generated_text || t(locale, 'summaryError'))
     } catch {
       try {
-        const response = await fetch('/api/summary', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ title: article.title, source: article.sources?.[0]?.name, locale }),
-        })
-        const fallback = await response.json()
-        if (!response.ok || !Array.isArray(fallback.summary)) throw new Error(t(locale, 'localAiError'))
-        setSummary(fallback.summary.join('\n'))
+        const fallback = await generateFreeAISummary(article.title, article.sources?.[0]?.name, locale)
+        if (Array.isArray(fallback.summary)) {
+          setSummary(fallback.summary.join('\n'))
+        } else {
+          setSummary(fallback.keyTakeaway || article.title)
+        }
       } catch {
         setError(t(locale, 'localAiError'))
       }
