@@ -3,10 +3,10 @@
   "version": "0.2.0",
   "description": "Yapay zeka destekli interaktif haber haritası ve treemap görselleştiricisi",
   "private": true,
-  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:gh-pages": "node -e \"const fs=require('fs'); if(fs.existsSync('app/api')) fs.renameSync('app/api', '_api_backup')\" && next build && node -e \"const fs=require('fs'); if(fs.existsSync('_api_backup')) fs.renameSync('_api_backup', 'app/api')\"",
     "start": "next start"
   },
   "dependencies": {
