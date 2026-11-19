@@ -78,8 +78,15 @@ export async function getNews(options) {
  * @param {string} options.edition Used for language/region (hl, gl, ceid)
  */
 export async function searchNews(options) {
-    const urls = await getEditionUrls(options.edition);
-    const params = new URLSearchParams(getLocaleQuery(urls));
+    let localeQuery = "";
+    try {
+        const urls = await getEditionUrls(options.edition);
+        localeQuery = getLocaleQuery(urls);
+    } catch {
+        const [, fallbackQuery] = editionHint(options.edition);
+        localeQuery = fallbackQuery;
+    }
+    const params = new URLSearchParams(localeQuery);
     params.set("q", options.query);
 
     const googleNewsUrl = `https://news.google.com/rss/search?${params}`;
@@ -385,7 +392,14 @@ function getItemLink(itemEl) {
     const rssLink = links.find(l => (l.textContent || "").trim());
     if (rssLink) return (rssLink.textContent || "").trim();
     const guid = itemEl.getElementsByTagName("guid")[0];
-    return guid && guid.getAttribute("isPermaLink") !== "false" ? (guid.textContent || "").trim() : "";
+    if (guid && (guid.textContent || "").startsWith("http")) return guid.textContent.trim();
+
+    const descEl = itemEl.getElementsByTagName("description")[0];
+    if (descEl && descEl.textContent) {
+        const match = descEl.textContent.match(/href="([^"]+)"/);
+        if (match && match[1]) return match[1];
+    }
+    return "";
 }
 
 /**
