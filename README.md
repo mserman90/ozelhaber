@@ -25,12 +25,8 @@
 - Birden fazla kaynağa sahip haberlerde dileyen kullanıcılar için çoklu kaynak inceleme desteği.
 - Sıfır gecikme, sıfır harici API bağımlılığı ve tamamen güvenli istemci tarafı deneyim.
 
-### 3. 📚 Zengin Hazır Kaynak Kataloğu (Preset Directory)
-- Tek tıkla haritaya eklenebilen seçkin kaynaklar:
-  - **Gündem:** Anadolu Ajansı, TRT Haber, BBC Türkçe, Sözcü, NTV, T24.
-  - **Teknoloji:** Webrazzi, ShiftDelete.Net, DonanımHaber, Webtekno, TechCrunch, The Verge, Hacker News.
-  - **Ekonomi:** Bloomberg HT, Dünya Gazetesi.
-  - **Dünya:** BBC News World, Reuters, The Guardian.
+### 3. 📚 Popüler Kaynaklar & Özel RSS / Google Dork Desteği
+- Popüler haber kaynakları dizininden tek tıkla kaynak ekleme (Türkiye, Dünya, Teknoloji, Ekonomi).
 - Dilediğiniz özel RSS/Atom adresini ekleme ve gelişmiş Google News Dork sorguları oluşturma imkanı.
 
 ### 4. 🎨 3 Farklı Görsel Tema

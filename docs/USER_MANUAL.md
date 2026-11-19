@@ -9,7 +9,7 @@ Bu kılavuzda uygulamanın tüm özelliklerini, kısayollarını ve püf noktala
 ## 📌 İçindekiler
 1. [Hızlı Başlangıç ve Temel Arayüz](#1-hızlı-başlangıç-ve-temel-arayüz)
 2. [Haberleri Okuma ve Kaynaklara Erişim](#2-haberleri-okuma-ve-kaynaklara-erişim)
-3. [📚 Hazır Kaynak Kataloğundan Haber Ekleme](#3-hazır-kaynak-kataloğundan-haber-ekleme)
+3. [📚 Popüler Kaynaklardan Haber Ekleme](#3-popüler-kaynaklardan-haber-ekleme)
 4. [🔍 Kendi RSS veya Google Dork Aramanızı Ekleyin](#4-kendi-rss-veya-google-dork-aramanızı-ekleyin)
 5. [🎨 Görsel Temalar ve Kişiselleştirme](#5-görsel-temalar-ve-kişiselleştirme)
 6. [🔗 Panoyu Paylaşma (Stateful URLs)](#6-panoyu-paylaşma-stateful-urls)
@@ -49,18 +49,14 @@ Bu kılavuzda uygulamanın tüm özelliklerini, kısayollarını ve püf noktala
 
 ---
 
-## 3. 📚 Hazır Kaynak Kataloğundan Haber Ekleme
+## 3. 📚 Popüler Kaynaklardan Haber Ekleme
 
 Kendi özel haber panonuzu oluşturmak için elle RSS adresi aramanıza gerek yoktur:
 
 1. Üst menüden **"Kaynaklar"** butonuna tıklayın.
-2. Açılan pencerede en baştaki **"Katalog / Önerilenler"** sekmesine gelin.
-3. Kategorilerden filtreleyin:
-   - **Gündem:** Anadolu Ajansı, TRT Haber, BBC Türkçe, Sözcü, NTV, T24.
-   - **Teknoloji:** Webrazzi, ShiftDelete.Net, DonanımHaber, Webtekno, TechCrunch, The Verge, Hacker News.
-   - **Ekonomi:** Bloomberg HT, Dünya Gazetesi.
-   - **Dünya:** BBC News, Reuters, The Guardian.
-4. İstediğiniz kaynağın yanındaki **"+ Haritaya Ekle"** butonuna basın.
+2. Açılan pencerede **"Popüler kaynaklar"** sekmesine gelin.
+3. Bölge ve kategorilerden dilediğiniz kaynağı seçin (Türkiye, Dünya, Teknoloji, İş dünyası ve finans).
+4. İstediğiniz kaynağın yanındaki **"+ Ekle"** butonuna basın.
 5. Kaynak anında haritada kendi özel rengiyle bir blok olarak belirir!
 
 ---
