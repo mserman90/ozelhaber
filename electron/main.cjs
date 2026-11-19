@@ -49,6 +49,19 @@ function closeScreensaver(window) {
   }
 }
 
+function isNewerVersion(remote, local) {
+  if (!remote || !local) return false
+  const r = (remote.replace(/^v/, '').split('.')).map(n => parseInt(n, 10) || 0)
+  const l = (local.replace(/^v/, '').split('.')).map(n => parseInt(n, 10) || 0)
+  for (let i = 0; i < 3; i++) {
+    const rv = r[i] || 0
+    const lv = l[i] || 0
+    if (rv > lv) return true
+    if (rv < lv) return false
+  }
+  return false
+}
+
 // GitHub Releases Update Checker
 async function checkGitHubUpdates(manual = false) {
   try {
@@ -69,8 +82,8 @@ async function checkGitHubUpdates(manual = false) {
     const latestTag = (release.tag_name || '').trim()
     const currentVersion = 'v' + app.getVersion()
 
-    if (latestTag && latestTag !== currentVersion) {
-      const { response: choice } = await dialog.showMessageBox(mainWindow, {
+    if (isNewerVersion(latestTag, currentVersion)) {
+      const dialogOpts = {
         type: 'info',
         title: 'Yeni Güncelleme Mevcut',
         message: `ÖzelHaber ${latestTag} sürümü yayınlandı! (Mevcut: ${currentVersion})`,
@@ -78,7 +91,11 @@ async function checkGitHubUpdates(manual = false) {
         buttons: ['İndir / Güncelle', 'Daha Sonra'],
         defaultId: 0,
         cancelId: 1,
-      })
+      }
+      const { response: choice } = (mainWindow && !mainWindow.isDestroyed())
+        ? await dialog.showMessageBox(mainWindow, dialogOpts)
+        : await dialog.showMessageBox(dialogOpts)
+
       if (choice === 0) {
         const setupAsset = (release.assets || []).find(a => a.name.endsWith('.exe'))
         shell.openExternal(setupAsset ? setupAsset.browser_download_url : release.html_url)
@@ -248,61 +265,69 @@ function createWindow(isScreensaver = screensaverMode) {
 
 function updateTrayMenu() {
   if (!tray) return
-  const isAutoStart = app.getLoginItemSettings().openAtLogin
+  try {
+    const isAutoStart = app.getLoginItemSettings().openAtLogin
 
-  const contextMenu = Menu.buildFromTemplate([
-    { label: 'ÖzelHaber’i Aç', click: showDesktop },
-    {
-      label: 'Haber Panosunu Yenile (F5)',
-      click: () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.reloadIgnoringCache()
-        }
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'ÖzelHaber’i Aç', click: showDesktop },
+      {
+        label: 'Haber Panosunu Yenile (F5)',
+        click: () => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.reloadIgnoringCache()
+          }
+        },
       },
-    },
-    { type: 'separator' },
-    { label: 'Ekran koruyucuyu başlat', click: () => { createWindow(true) } },
-    { label: 'Windows Ekran Koruyucu Ayarları...', click: () => { shell.openPath('rundll32.exe desk.cpl,InstallScreenSaver') } },
-    { type: 'separator' },
-    {
-      label: 'Yayın Kaynağı: GitHub Pages',
-      type: 'radio',
-      checked: currentAppUrl === GITHUB_PAGES_URL,
-      click: () => {
-        currentAppUrl = GITHUB_PAGES_URL
-        mainWindow?.loadURL(currentAppUrl)
+      { type: 'separator' },
+      { label: 'Ekran koruyucuyu başlat', click: () => { createWindow(true) } },
+      { label: 'Windows Ekran Koruyucu Ayarları...', click: () => { shell.openPath('rundll32.exe desk.cpl,InstallScreenSaver') } },
+      { type: 'separator' },
+      {
+        label: 'Yayın Kaynağı: GitHub Pages',
+        type: 'radio',
+        checked: currentAppUrl === GITHUB_PAGES_URL,
+        click: () => {
+          currentAppUrl = GITHUB_PAGES_URL
+          mainWindow?.loadURL(currentAppUrl)
+        },
       },
-    },
-    {
-      label: 'Yayın Kaynağı: Vercel (Yedek)',
-      type: 'radio',
-      checked: currentAppUrl === VERCEL_URL,
-      click: () => {
-        currentAppUrl = VERCEL_URL
-        mainWindow?.loadURL(currentAppUrl)
+      {
+        label: 'Yayın Kaynağı: Vercel (Yedek)',
+        type: 'radio',
+        checked: currentAppUrl === VERCEL_URL,
+        click: () => {
+          currentAppUrl = VERCEL_URL
+          mainWindow?.loadURL(currentAppUrl)
+        },
       },
-    },
-    { type: 'separator' },
-    {
-      label: 'Windows ile Birlikte Başlat',
-      type: 'checkbox',
-      checked: isAutoStart,
-      click: (item) => {
-        app.setLoginItemSettings({ openAtLogin: item.checked, openAsHidden: true })
+      { type: 'separator' },
+      {
+        label: 'Windows ile Birlikte Başlat',
+        type: 'checkbox',
+        checked: isAutoStart,
+        click: (item) => {
+          app.setLoginItemSettings({ openAtLogin: item.checked, openAsHidden: true })
+        },
       },
-    },
-    { label: 'Güncellemeleri Denetle...', click: () => checkGitHubUpdates(true) },
-    { type: 'separator' },
-    { label: 'Çıkış', click: () => { quitting = true; app.quit() } },
-  ])
-  tray.setContextMenu(contextMenu)
+      { label: 'Güncellemeleri Denetle...', click: () => checkGitHubUpdates(true) },
+      { type: 'separator' },
+      { label: 'Çıkış', click: () => { quitting = true; app.quit() } },
+    ])
+    tray.setContextMenu(contextMenu)
+  } catch (err) {
+    console.error('Tray menu update error:', err)
+  }
 }
 
 function makeTray() {
-  tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')))
-  tray.setToolTip('ÖzelHaber — haber masaüstü panosu')
-  updateTrayMenu()
-  tray.on('double-click', showDesktop)
+  try {
+    tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')))
+    tray.setToolTip('ÖzelHaber — haber masaüstü panosu')
+    updateTrayMenu()
+    tray.on('double-click', showDesktop)
+  } catch (err) {
+    console.error('Tray creation error:', err)
+  }
 }
 
 if (configMode) {
