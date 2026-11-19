@@ -9,7 +9,8 @@
 
 .TreeMap-cat-list > li {
   position: absolute;
-  transition: all 2s;
+  transition: top 0.35s cubic-bezier(0.2, 0, 0, 1), left 0.35s cubic-bezier(0.2, 0, 0, 1), width 0.35s cubic-bezier(0.2, 0, 0, 1), height 0.35s cubic-bezier(0.2, 0, 0, 1);
+  will-change: top, left, width, height;
 }
 
 .TreeMap-cat-list > li > p {

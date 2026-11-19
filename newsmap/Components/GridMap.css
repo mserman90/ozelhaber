@@ -28,7 +28,7 @@
 
 .GridMap-article-list > li {
   position: relative;
-  transition: all 2s;
+  transition: flex-basis 0.35s ease, background-color 0.3s ease;
   flex-shrink: 1;
   flex-basis: 0;
 }

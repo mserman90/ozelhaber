@@ -54,12 +54,6 @@ button:active {
 }
 
 .App-Edition {
-  transition: all 1s;
-  /* First loading */
-  animation: fade-bg 1s;
-}
-
-.App-Edition:not(:empty) {
   /* Toggling all categories on/off */
   background: rgb(9 9 9 / 0.8);
 }
